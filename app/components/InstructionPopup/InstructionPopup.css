@@ -1,0 +1,225 @@
+.instruction-popup-div {
+  position: fixed;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: min(520px, 88vw);
+
+  padding: 34px 34px 30px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: rgb(157, 1, 157);
+
+  border: 1px solid rgba(220, 235, 255, 0.2);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(80, 150, 255, 0.08);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  z-index: 2000;
+
+  color: #f4f7fb;
+}
+
+/*
+  Dark + blurred background
+*/
+
+.instruction-popup-div::before {
+  content: "";
+
+  position: fixed;
+
+  top: 50%;
+  left: 50%;
+
+  width: 100vw;
+  height: 100vh;
+
+  transform: translate(-50%, -50%);
+
+  background: rgba(2, 7, 15, 0.55);
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+/*
+  Title
+*/
+
+.instruction-popup-title {
+  margin-bottom: 28px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: clamp(1.4rem, 3vw, 2rem);
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color: #f4f7fb;
+
+  text-align: center;
+
+  text-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(150, 200, 255, 0.15);
+}
+
+/*
+  Points container
+*/
+
+.instruction-popup-data-display-div {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+/*
+  Individual point row
+*/
+
+.instruction-popup-data {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 12px;
+}
+
+/*
+  Lucide icon
+*/
+
+.instruction-popup-dot {
+  flex-shrink: 0;
+
+  width: 16px;
+  height: 16px;
+
+  margin-top: 3px;
+
+  color: #dcecff;
+
+  stroke-width: 2.5;
+}
+
+/*
+  Point text
+*/
+
+.instruction-popup-point {
+  font-family: Arial, sans-serif;
+
+  font-size: 0.95rem;
+
+  line-height: 1.6;
+
+  letter-spacing: 0.02em;
+
+  color: #dce5f2;
+}
+
+/*
+  Okay button
+*/
+
+.instruction-popup-ok-button {
+  margin-top: 30px;
+
+  min-width: 120px;
+
+  padding: 11px 28px;
+
+  border: 1px solid rgba(220, 235, 255, 0.3);
+
+  border-radius: 8px;
+
+  background: rgba(220, 235, 255, 0.1);
+
+  color: #f4f7fb;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 0.9rem;
+
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.instruction-popup-ok-button:hover {
+  background: rgba(220, 235, 255, 0.18);
+
+  border-color: rgba(220, 235, 255, 0.55);
+
+  transform: translateY(-2px);
+}
+
+.instruction-popup-ok-button:active {
+  transform: translateY(0);
+}
+
+/*
+  Mobile
+*/
+
+@media (max-width: 768px) {
+  .instruction-popup-div {
+    width: 88vw;
+
+    padding: 28px 24px 25px;
+
+    border-radius: 16px;
+  }
+
+  .instruction-popup-title {
+    margin-bottom: 22px;
+
+    font-size: 1.35rem;
+  }
+
+  .instruction-popup-data-display-div {
+    gap: 15px;
+  }
+
+  .instruction-popup-point {
+    font-size: 0.88rem;
+  }
+
+  .instruction-popup-ok-button {
+    margin-top: 26px;
+  }
+}

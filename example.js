@@ -13,3 +13,11 @@ const portfolioBGM = [
   "/audio/bgm3.mp3",
   "/audio/bgm4.mp3",
 ];
+
+//-------------------------instruction-popup--------------------------
+
+const instructionPopupData = [
+  "welcome to my 3d portfolio inspired by spider-verse",
+  "click w, s, a, d to move the charectior",
+  "Explore different parts of the map to see my projects",
+];
