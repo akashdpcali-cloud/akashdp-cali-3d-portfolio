@@ -1,0 +1,134 @@
+.joystick-dev {
+  position: fixed;
+
+  left: 24px;
+  bottom: 24px;
+
+  width: 160px;
+  height: 160px;
+
+  z-index: 1000;
+
+  display: none;
+
+  touch-action: none;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.joystick-zone {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 140px;
+  height: 140px;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: rgba(5, 12, 24, 0.25);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Direction symbols */
+
+.joystick-direction {
+  position: absolute;
+
+  z-index: 2;
+
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgb(119, 119, 119);
+
+  font-size: 17px;
+  font-weight: 600;
+
+  pointer-events: none;
+
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.joystick-forward {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.joystick-backward {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.joystick-left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.joystick-right {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Diagonal directions */
+
+.joystick-forward-left {
+  top: 13px;
+  left: 13px;
+}
+
+.joystick-forward-right {
+  top: 13px;
+  right: 13px;
+}
+
+.joystick-backward-left {
+  bottom: 13px;
+  left: 13px;
+}
+
+.joystick-backward-right {
+  bottom: 13px;
+  right: 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+  .joystick-dev {
+    display: block;
+  }
+}
+
+/* Smaller phones */
+
+@media (max-width: 480px) {
+  .joystick-dev {
+    left: 18px;
+    bottom: 18px;
+
+    width: 150px;
+    height: 150px;
+  }
+
+  .joystick-zone {
+    width: 130px;
+    height: 130px;
+  }
+}
