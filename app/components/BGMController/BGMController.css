@@ -1,0 +1,60 @@
+.bgm-speaker-button {
+  position: fixed;
+
+  top: 10px;
+  left: 200px;
+
+  z-index: 1000;
+}
+
+.bgm-speaker-button button {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+
+  background: purple;
+
+  color: #f4f7fb;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.bgm-speaker-button button:hover {
+  transform: scale(1.08);
+
+  background: plum;
+
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.bgm-speaker-button button:active {
+  transform: scale(0.95);
+}
+
+.bgm-speaker-on,
+.bgm-speaker-off {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 768px) {
+  .bgm-speaker-button {
+    top: 10px;
+    left: 150px;
+  }
+}

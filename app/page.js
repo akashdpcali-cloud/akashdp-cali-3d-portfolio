@@ -1,5 +1,11 @@
-import LoadingPage from "./components/LoadingPage/LoadingPage.jsx";
+import BGMController from "./components/BGMController/BGMController";
 
 export default function Home() {
-  return <LoadingPage />;
+  return (
+    <main>
+      <BGMController />
+
+      {/* Your future portfolio components will go here */}
+    </main>
+  );
 }
