@@ -1,40 +1,41 @@
-/*
-========================================
-BACKDROP
-========================================
-*/
+/* =========================================
+   BACKDROP
+========================================= */
 
 .ai-chat-section-backdrop {
   position: fixed;
-
   inset: 0;
 
-  z-index: 2999;
+  display: none;
+
+  width: 100%;
+  height: 100%;
 
   background: rgba(2, 6, 14, 0.62);
 
+  opacity: 0;
+
+  z-index: 9998;
+
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  font-family: "Roboto", sans-serif;
 }
 
-/*
-========================================
-MAIN CHAT PANEL
-========================================
-*/
+/* =========================================
+   MAIN CHAT SECTION
+========================================= */
 
 .ai-chat-section {
   position: fixed;
 
-  top: 24px;
-  right: 24px;
-  bottom: 24px;
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
 
   width: min(430px, calc(100vw - 48px));
 
-  z-index: 3000;
-
-  display: flex;
+  display: none;
   flex-direction: column;
 
   overflow: hidden;
@@ -48,16 +49,21 @@ MAIN CHAT PANEL
   box-shadow:
     0 25px 80px rgba(0, 0, 0, 0.65),
     0 0 50px rgba(70, 140, 255, 0.08);
+
+  z-index: 9999;
+
+  will-change: transform;
 }
 
-/*
-========================================
-HEADER
-========================================
-*/
+/* =========================================
+   HEADER
+========================================= */
 
 .ai-chat-section-header {
+  width: 100%;
   min-height: 72px;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
@@ -65,29 +71,39 @@ HEADER
 
   padding: 12px 16px;
 
-  background: rgba(15, 28, 48, 0.95);
+  box-sizing: border-box;
+
+  background: #0f1c30;
 
   border-bottom: 1px solid rgba(220, 235, 255, 0.12);
 }
 
-/*
-Header left
-*/
+/* Header left */
 
 .ai-chat-section-header-left-div {
   display: flex;
   align-items: center;
 
   gap: 12px;
+
+  min-width: 0;
 }
 
-/*
-AI icon
-*/
+/* =========================================
+   AI ICON
+========================================= */
 
 .ai-chat-section-ai-icon {
   width: 42px;
   height: 42px;
+
+  min-width: 42px;
+  min-height: 42px;
+
+  max-width: 42px;
+  max-height: 42px;
+
+  display: block;
 
   flex-shrink: 0;
 
@@ -100,33 +116,44 @@ AI icon
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
 }
 
-/*
-Title
-*/
+/* =========================================
+   TITLE
+========================================= */
 
 .ai-chat-section-title {
+  overflow: hidden;
+
   color: #f4f7fb;
 
   font-size: 1rem;
-
   font-weight: 700;
 
   letter-spacing: 0.04em;
+
+  white-space: nowrap;
 }
 
-/*
-Close
-*/
+/* =========================================
+   CLOSE BUTTON
+========================================= */
 
 .ai-chat-section-header-right-div {
   width: 38px;
   height: 38px;
 
+  min-width: 38px;
+
   display: flex;
   align-items: center;
   justify-content: center;
 
+  padding: 0;
+
+  border: none;
+
   border-radius: 9px;
+
+  background: transparent;
 
   color: #dce5f2;
 
@@ -148,18 +175,20 @@ Close
   height: 20px;
 }
 
-/*
-========================================
-CONVERSATION
-========================================
-*/
+/* =========================================
+   CONVERSATION
+========================================= */
 
 .ai-chat-section-conversation-display-div {
+  width: 100%;
+
   flex: 1;
 
   min-height: 0;
 
   overflow-y: auto;
+
+  box-sizing: border-box;
 
   padding: 22px 18px;
 
@@ -171,9 +200,7 @@ CONVERSATION
   background: #08111f;
 }
 
-/*
-Scrollbar
-*/
+/* Scrollbar */
 
 .ai-chat-section-conversation-display-div::-webkit-scrollbar {
   width: 5px;
@@ -189,11 +216,9 @@ Scrollbar
   border-radius: 10px;
 }
 
-/*
-========================================
-USER MESSAGE
-========================================
-*/
+/* =========================================
+   USER MESSAGE
+========================================= */
 
 .ai-chat-section-user-message {
   align-self: flex-end;
@@ -201,6 +226,8 @@ USER MESSAGE
   max-width: 82%;
 
   padding: 11px 14px;
+
+  box-sizing: border-box;
 
   border-radius: 14px 14px 3px 14px;
 
@@ -217,11 +244,9 @@ USER MESSAGE
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
 }
 
-/*
-========================================
-AI MESSAGE
-========================================
-*/
+/* =========================================
+   AI MESSAGE
+========================================= */
 
 .ai-chat-section-ai-message {
   align-self: flex-start;
@@ -229,6 +254,8 @@ AI MESSAGE
   max-width: 88%;
 
   padding: 12px 14px;
+
+  box-sizing: border-box;
 
   border-radius: 14px 14px 14px 3px;
 
@@ -245,27 +272,29 @@ AI MESSAGE
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
 }
 
-/*
-========================================
-INPUT AREA
-========================================
-*/
+/* =========================================
+   INPUT AREA
+========================================= */
 
 .ai-chat-section-message-input-div {
+  width: 100%;
+
+  flex-shrink: 0;
+
   display: flex;
 
   gap: 10px;
 
   padding: 14px;
 
+  box-sizing: border-box;
+
   background: #0d192a;
 
   border-top: 1px solid rgba(220, 235, 255, 0.12);
 }
 
-/*
-Input
-*/
+/* Input */
 
 .ai-chat-section-message-input {
   flex: 1;
@@ -275,6 +304,8 @@ Input
   height: 44px;
 
   padding: 0 13px;
+
+  box-sizing: border-box;
 
   border: 1px solid rgba(220, 235, 255, 0.15);
 
@@ -287,10 +318,6 @@ Input
   color: #f4f7fb;
 
   font-size: 0.88rem;
-
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
 }
 
 .ai-chat-section-message-input::placeholder {
@@ -303,12 +330,14 @@ Input
   background: #14243a;
 }
 
-/*
-Send button
-*/
+/* =========================================
+   SEND BUTTON
+========================================= */
 
 .ai-chat-section-message-send-button {
   height: 44px;
+
+  flex-shrink: 0;
 
   padding: 0 16px;
 
@@ -343,18 +372,11 @@ Send button
   transform: translateY(0);
 }
 
-/*
-========================================
-MOBILE
-========================================
-*/
+/* =========================================
+   MOBILE
+========================================= */
 
 @media (max-width: 768px) {
-  .ai-chat-section-backdrop {
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
   .ai-chat-section {
     top: 12px;
     right: 12px;
