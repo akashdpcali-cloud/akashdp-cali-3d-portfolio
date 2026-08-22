@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
 import portfolioData from "../../data/portfolioData.js";
+import { rateLimit } from "../../../lib/rateLimit";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -27,12 +28,32 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    const userMessage = body.message;
+    const forwardedFor = request.headers.get("x-forwarded-for");
 
-    if (!userMessage) {
+    const identifier = forwardedFor?.split(",")[0]?.trim() || "unknown";
+
+    const limit = rateLimit(identifier);
+
+    if (!limit.success) {
       return Response.json(
         {
-          error: "Message is required",
+          error: `Too many requests. Please try again in ${limit.retryAfter} seconds.`,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(limit.retryAfter),
+          },
+        },
+      );
+    }
+
+    const messages = body.messages;
+
+    if (!messages || !Array.isArray(messages)) {
+      return Response.json(
+        {
+          error: "Messages are required.",
         },
         {
           status: 400,
@@ -48,27 +69,50 @@ export async function POST(request) {
           role: "system",
           content: systemPrompt,
         },
-        {
-          role: "user",
-          content: userMessage,
-        },
+
+        ...messages,
       ],
 
-      temperature: 0.7,
+      temperature: 0.4,
+
+      stream: true,
     });
 
-    const aiResponse =
-      completion.choices[0]?.message?.content || "No response generated.";
+    const encoder = new TextEncoder();
 
-    return Response.json({
-      response: aiResponse,
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of completion) {
+            const content = chunk.choices?.[0]?.delta?.content || "";
+
+            if (content) {
+              controller.enqueue(encoder.encode(content));
+            }
+          }
+
+          controller.close();
+        } catch (error) {
+          console.error("Streaming error:", error);
+
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
     });
   } catch (error) {
-    console.error("GROQ ERROR:", error);
+    console.error("Groq API error:", error);
 
     return Response.json(
       {
-        error: error.message,
+        error: "Failed to generate AI response.",
       },
       {
         status: 500,
