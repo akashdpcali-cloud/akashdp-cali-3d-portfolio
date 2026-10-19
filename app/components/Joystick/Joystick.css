@@ -1,134 +1,147 @@
-.joystick-dev {
-  position: fixed;
-
-  left: 24px;
-  bottom: 24px;
-
-  width: 160px;
-  height: 160px;
-
-  z-index: 1000;
-
+/* Hide on Desktop (Only display on Touch screens / Mobile & Tablets) */
+.joystick-wrapper {
   display: none;
-
-  touch-action: none;
-
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  z-index: 9999;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
 }
 
-.joystick-zone {
-  position: absolute;
+@media (max-width: 1024px) {
+  .joystick-wrapper {
+    display: block;
+    cursor: pointer;
+  }
+}
 
-  left: 50%;
-  top: 50%;
-
-  width: 140px;
-  height: 140px;
-
-  transform: translate(-50%, -50%);
-
+/* Shadow Fight Outer Metallic Wheel */
+.sf2-joystick {
+  position: relative;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-
-  background: rgba(5, 12, 24, 0.25);
-
-  border: 1px solid rgba(255, 255, 255, 0.15);
-
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-/* Direction symbols */
-
-.joystick-direction {
-  position: absolute;
-
-  z-index: 2;
-
-  width: 22px;
-  height: 22px;
-
+  background: radial-gradient(circle, #1a1c23 0%, #0d0e12 70%, #050507 100%);
+  border: 3px solid #2a2e3d;
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.8),
+    inset 0 0 15px rgba(0, 0, 0, 0.9),
+    0 0 10px rgba(0, 240, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
 
-  color: rgb(119, 119, 119);
+.sf2-joystick.active {
+  border-color: #00f0ff;
+  box-shadow:
+    0 0 25px rgba(0, 240, 255, 0.4),
+    inset 0 0 20px rgba(0, 0, 0, 0.9);
+}
 
-  font-size: 17px;
-  font-weight: 600;
-
+/* Track Ring Detail */
+.track-ring {
+  position: absolute;
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
   pointer-events: none;
-
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
 }
 
-.joystick-forward {
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+/* Directional Arrows */
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  transition:
+    opacity 0.15s ease,
+    filter 0.15s ease;
 }
 
-.joystick-backward {
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+.arrow-up {
+  top: 8px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 12px solid #8a93a5;
 }
 
-.joystick-left {
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.arrow-down {
+  bottom: 8px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 12px solid #8a93a5;
 }
 
-.joystick-right {
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.arrow-left {
+  left: 8px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 12px solid #8a93a5;
 }
 
-/* Diagonal directions */
-
-.joystick-forward-left {
-  top: 13px;
-  left: 13px;
+.arrow-right {
+  right: 8px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 12px solid #8a93a5;
 }
 
-.joystick-forward-right {
-  top: 13px;
-  right: 13px;
+/* Arrow Active Glow */
+.arrow.glowing {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px #00f0ff);
 }
 
-.joystick-backward-left {
-  bottom: 13px;
-  left: 13px;
+.arrow-up.glowing {
+  border-bottom-color: #00f0ff;
+}
+.arrow-down.glowing {
+  border-top-color: #00f0ff;
+}
+.arrow-left.glowing {
+  border-right-color: #00f0ff;
+}
+.arrow-right.glowing {
+  border-left-color: #00f0ff;
 }
 
-.joystick-backward-right {
-  bottom: 13px;
-  right: 13px;
+/* Metallic Central Knob */
+.joystick-knob {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #3a3f52 0%,
+    #181a24 70%,
+    #0b0c10 100%
+  );
+  border: 2px solid #525b73;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  pointer-events: none;
 }
 
-/* Mobile */
-
-@media (max-width: 768px) {
-  .joystick-dev {
-    display: block;
-  }
-}
-
-/* Smaller phones */
-
-@media (max-width: 480px) {
-  .joystick-dev {
-    left: 18px;
-    bottom: 18px;
-
-    width: 150px;
-    height: 150px;
-  }
-
-  .joystick-zone {
-    width: 130px;
-    height: 130px;
-  }
+/* Glowing Spider-Verse Neon Core */
+.knob-core {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00f0ff;
+  box-shadow:
+    0 0 10px #00f0ff,
+    0 0 20px #ff0055;
 }

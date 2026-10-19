@@ -6,6 +6,7 @@ import Joystick from "./components/Joystick/Joystick";
 import InstructionPopup from "./components/InstructionPopup/InstructionPopup";
 import AiTrigger from "./components/AiTrigger/AiTrigger";
 import AiChatSection from "./components/AiChatSection/AiChatSection";
+import LoadingPage from "./components/LoadingPage/LoadingPage";
 
 export default function Home() {
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
@@ -19,6 +20,8 @@ export default function Home() {
         isOpen={isAiChatOpen}
         onClose={() => setIsAiChatOpen(false)}
       />
+
+      {/* <LoadingPage /> */}
 
       {/* Your future portfolio components will go here */}
     </main>

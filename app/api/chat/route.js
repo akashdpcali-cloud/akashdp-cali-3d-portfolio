@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
 import portfolioData from "../../data/portfolioData.js";
-import { rateLimit } from "../../../lib/rateLimit";
+import { rateLimit } from "../../lib/rateLimit";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,

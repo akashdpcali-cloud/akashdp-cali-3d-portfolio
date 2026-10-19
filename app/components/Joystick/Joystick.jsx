@@ -1,94 +1,151 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import "./Joystick.css";
 
 export default function Joystick({ onMove }) {
-  const joystickRef = useRef(null);
+  const containerRef = useRef(null);
+  const knobRef = useRef(null);
+  const [activeDirection, setActiveDirection] = useState(null);
+  const [isTouched, setIsTouched] = useState(false);
 
   useEffect(() => {
-    const joystickZone = joystickRef.current;
+    const container = containerRef.current;
+    if (!container) return;
 
-    if (!joystickZone) return;
+    let isDragging = false;
+    let center = { x: 0, y: 0 };
+    const maxRadius = 45;
 
-    let joystick;
-
-    const setupJoystick = async () => {
-      const nipplejs = (await import("nipplejs")).default;
-
-      joystick = nipplejs.create({
-        zone: joystickZone,
-        mode: "static",
-        position: {
-          left: "50%",
-          top: "50%",
-        },
-        size: 100,
-        color: "white",
-        opacity: 0.75,
-        restOpacity: 0.5,
-        threshold: 0.1,
-      });
-
-      joystick.on("move", (event, data) => {
-        if (!data?.angle?.degree) return;
-
-        const angle = data.angle.degree;
-
-        let direction;
-
-        if (angle >= 22.5 && angle < 67.5) {
-          direction = "W-D";
-        } else if (angle >= 67.5 && angle < 112.5) {
-          direction = "W";
-        } else if (angle >= 112.5 && angle < 157.5) {
-          direction = "W-A";
-        } else if (angle >= 157.5 && angle < 202.5) {
-          direction = "A";
-        } else if (angle >= 202.5 && angle < 247.5) {
-          direction = "A-S";
-        } else if (angle >= 247.5 && angle < 292.5) {
-          direction = "S";
-        } else if (angle >= 292.5 && angle < 337.5) {
-          direction = "S-D";
-        } else {
-          direction = "D";
-        }
-
-        onMove?.(direction);
-      });
-      joystick.on("end", () => {
-        onMove?.(null);
-      });
+    const getCenter = () => {
+      const rect = container.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
     };
 
-    setupJoystick();
+    const handleStart = (clientX, clientY) => {
+      isDragging = true;
+      center = getCenter();
+      setIsTouched(true);
+      handleMove(clientX, clientY);
+    };
+
+    const handleMove = (clientX, clientY) => {
+      if (!isDragging) return;
+
+      const dx = clientX - center.x;
+      const dy = clientY - center.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const angleRad = Math.atan2(-dy, dx);
+      let angleDeg = (angleRad * 180) / Math.PI;
+      if (angleDeg < 0) angleDeg += 360;
+
+      const clampedDistance = Math.min(distance, maxRadius);
+      const knobX = Math.cos(angleRad) * clampedDistance;
+      const knobY = -Math.sin(angleRad) * clampedDistance;
+
+      if (knobRef.current) {
+        knobRef.current.style.transform = `translate(${knobX}px, ${knobY}px)`;
+      }
+
+      if (distance < 10) {
+        setActiveDirection(null);
+        onMove?.(null);
+        return;
+      }
+
+      let direction = null;
+      if (angleDeg >= 22.5 && angleDeg < 67.5) direction = "W-D";
+      else if (angleDeg >= 67.5 && angleDeg < 112.5) direction = "W";
+      else if (angleDeg >= 112.5 && angleDeg < 157.5) direction = "W-A";
+      else if (angleDeg >= 157.5 && angleDeg < 202.5) direction = "A";
+      else if (angleDeg >= 202.5 && angleDeg < 247.5) direction = "A-S";
+      else if (angleDeg >= 247.5 && angleDeg < 292.5) direction = "S";
+      else if (angleDeg >= 292.5 && angleDeg < 337.5) direction = "S-D";
+      else direction = "D";
+
+      setActiveDirection(direction);
+      onMove?.(direction);
+    };
+
+    const handleEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      setIsTouched(false);
+      setActiveDirection(null);
+      if (knobRef.current) {
+        knobRef.current.style.transform = `translate(0px, 0px)`;
+      }
+      onMove?.(null);
+    };
+
+    // --- Mouse Event Wrappers ---
+    const onMouseDown = (e) => handleStart(e.clientX, e.clientY);
+    const onMouseMove = (e) => handleMove(e.clientX, e.clientY);
+    const onMouseUp = () => handleEnd();
+
+    // --- Touch Event Wrappers ---
+    const onTouchStart = (e) => {
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY);
+    };
+    const onTouchMove = (e) => {
+      const touch = e.touches[0];
+      handleMove(touch.clientX, touch.clientY);
+    };
+    const onTouchEnd = () => handleEnd();
+
+    // Attach Mouse Listeners
+    container.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    // Attach Touch Listeners
+    container.addEventListener("touchstart", onTouchStart, { passive: false });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
 
     return () => {
-      joystick?.destroy();
+      container.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+
+      container.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
     };
   }, [onMove]);
 
   return (
-    <div className="joystick-dev">
-      <div className="joystick-direction joystick-forward">↑</div>
+    <div className="joystick-wrapper">
+      <div
+        ref={containerRef}
+        className={`sf2-joystick ${isTouched ? "active" : ""}`}
+      >
+        {/* Outer Directional Arrows (Shadow Fight Style) */}
+        <div
+          className={`arrow arrow-up ${activeDirection?.includes("W") ? "glowing" : ""}`}
+        />
+        <div
+          className={`arrow arrow-down ${activeDirection?.includes("S") ? "glowing" : ""}`}
+        />
+        <div
+          className={`arrow arrow-left ${activeDirection?.includes("A") ? "glowing" : ""}`}
+        />
+        <div
+          className={`arrow arrow-right ${activeDirection?.includes("D") ? "glowing" : ""}`}
+        />
 
-      <div className="joystick-direction joystick-backward">↓</div>
+        {/* Inner Track Ring */}
+        <div className="track-ring" />
 
-      <div className="joystick-direction joystick-left">←</div>
-
-      <div className="joystick-direction joystick-right">→</div>
-
-      <div className="joystick-direction joystick-forward-left">↖</div>
-
-      <div className="joystick-direction joystick-forward-right">↗</div>
-
-      <div className="joystick-direction joystick-backward-left">↙</div>
-
-      <div className="joystick-direction joystick-backward-right">↘</div>
-
-      <div ref={joystickRef} className="joystick-zone" />
+        {/* Central Moving Metallic Knob */}
+        <div ref={knobRef} className="joystick-knob">
+          <div className="knob-core" />
+        </div>
+      </div>
     </div>
   );
 }
