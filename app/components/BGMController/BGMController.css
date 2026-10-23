@@ -1,8 +1,8 @@
 .bgm-speaker-button {
   position: fixed;
 
-  top: 10px;
-  left: 200px;
+  top: 20px;
+  left: 20px;
 
   z-index: 1000;
 }
@@ -20,7 +20,7 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
 
-  background: purple;
+  background: rgb(255, 30, 0);
 
   color: #f4f7fb;
 
@@ -37,16 +37,16 @@
 
 .bgm-speaker-button button:hover {
   transform: scale(1.08);
-
-  background: plum;
-
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 30, 0, 0.725);
 }
 
 .bgm-speaker-button button:active {
   transform: scale(0.95);
 }
 
+.bgm-speaker-button button svg {
+  stroke-width: 3px;
+}
 .bgm-speaker-on,
 .bgm-speaker-off {
   width: 18px;
@@ -54,7 +54,7 @@
 }
 @media (max-width: 768px) {
   .bgm-speaker-button {
-    top: 10px;
-    left: 150px;
+    top: 20px;
+    left: 20px;
   }
 }
