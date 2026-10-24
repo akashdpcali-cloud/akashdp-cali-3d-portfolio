@@ -32,6 +32,8 @@ export default function ThreeScene({ selectedCharacter }) {
     arrowright: false,
   });
 
+  const runningRef = useRef(false);
+
   const joystickRef = useRef({
     w: false,
     a: false,
@@ -99,7 +101,9 @@ export default function ThreeScene({ selectedCharacter }) {
       if (character) {
         const keys = keysRef.current;
         const joystick = joystickRef.current;
-        const speed = 5;
+        const walkSpeed = 3;
+        const runSpeed = 8;
+        const speed = runningRef.current ? runSpeed : walkSpeed;
         const rotationSpeed = 10;
 
         const forward = keys.w || keys.arrowup || joystick.w;
@@ -135,7 +139,12 @@ export default function ThreeScene({ selectedCharacter }) {
         if (right) character.position.x += speed * delta;
 
         const actions = actionsRef.current;
-        const nextAction = isMoving ? actions.walk : actions.idle;
+
+        let nextAction = actions.idle;
+
+        if (isMoving) {
+          nextAction = runningRef.current ? actions.run : actions.walk;
+        }
 
         if (nextAction && actions.current !== nextAction) {
           actions.current?.fadeOut(0.2);
@@ -169,6 +178,10 @@ export default function ThreeScene({ selectedCharacter }) {
     const handleKeyDown = (event) => {
       const key = event.key.toLowerCase();
 
+      if (event.key === "Shift") {
+        runningRef.current = true;
+      }
+
       if (key in keysRef.current) {
         keysRef.current[key] = true;
       }
@@ -176,6 +189,10 @@ export default function ThreeScene({ selectedCharacter }) {
 
     const handleKeyUp = (event) => {
       const key = event.key.toLowerCase();
+
+      if (event.key === "Shift") {
+        runningRef.current = false;
+      }
 
       if (key in keysRef.current) {
         keysRef.current[key] = false;
@@ -348,6 +365,21 @@ export default function ThreeScene({ selectedCharacter }) {
           undefined,
           (error) => {
             console.error("Failed to load walk animation:", error);
+          },
+        );
+
+        loader.load(
+          selectedCharacter.run,
+          (runFbx) => {
+            if (cancelled || !mixerRef.current) return;
+
+            if (runFbx.animations.length > 0) {
+              actionsRef.current.run = mixer.clipAction(runFbx.animations[0]);
+            }
+          },
+          undefined,
+          (error) => {
+            console.error("Failed to load run animation:", error);
           },
         );
 
