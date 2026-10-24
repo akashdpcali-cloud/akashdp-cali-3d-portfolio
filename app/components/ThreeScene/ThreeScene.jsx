@@ -39,6 +39,11 @@ export default function ThreeScene({ selectedCharacter }) {
     d: false,
   });
 
+  const transformRef = useRef({
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+  });
+
   // Initialize the Three.js scene only once.
   useEffect(() => {
     const mount = mountRef.current;
@@ -256,8 +261,23 @@ export default function ThreeScene({ selectedCharacter }) {
     }
 
     if (characterRef.current) {
-      scene.remove(characterRef.current);
-      disposeCharacter(characterRef.current);
+      const currentCharacter = characterRef.current;
+
+      transformRef.current = {
+        position: {
+          x: currentCharacter.position.x,
+          y: currentCharacter.position.y,
+          z: currentCharacter.position.z,
+        },
+        rotation: {
+          x: currentCharacter.rotation.x,
+          y: currentCharacter.rotation.y,
+          z: currentCharacter.rotation.z,
+        },
+      };
+
+      scene.remove(currentCharacter);
+      disposeCharacter(currentCharacter);
       characterRef.current = null;
     }
 
@@ -275,15 +295,22 @@ export default function ThreeScene({ selectedCharacter }) {
         loadedCharacter = fbx;
 
         fbx.scale.setScalar(1);
-        fbx.position.set(0, 0, 0);
 
-        fbx.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
+        const savedTransform = transformRef.current;
 
+        fbx.position.set(
+          savedTransform.position.x,
+          savedTransform.position.y,
+          savedTransform.position.z,
+        );
+
+        fbx.rotation.set(
+          savedTransform.rotation.x,
+          savedTransform.rotation.y,
+          savedTransform.rotation.z,
+        );
+
+        characterRef.current = fbx;
         scene.add(fbx);
         characterRef.current = fbx;
 
