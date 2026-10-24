@@ -7,11 +7,17 @@ const portfolioData = {
   },
 
   skills: {
-    frontend: ["HTML", "CSS", "JavaScript", "React.js", "Next.js"],
+    frontend: ["React.js", "Next.js"],
 
-    "3d": ["Three.js", "GSAP"],
+    "3d": ["Three.js", "Blender"],
+
+    animation: ["GSAP"],
 
     backend: ["Node.js", "Express.js"],
+
+    "web socket": ["socket.io"],
+
+    database: ["PostgreSQL, SQLite"],
   },
 
   portfolio: {
@@ -52,4 +58,17 @@ export const characters = [
     walk: "/models/gwen/gwen-walk.fbx",
     run: "/models/gwen/gwen-run.fbx",
   },
+];
+
+export const portfolioBGM = [
+  "/audio/bgm1.mp3",
+  "/audio/bgm2.mp3",
+  "/audio/bgm3.mp3",
+  "/audio/bgm4.mp3",
+];
+
+export const instructionPopupData = [
+  "Welcome to my interactive 3D portfolio, inspired by the visual world of Spider-Verse.",
+  "Use W, A, S, and D to navigate your character through the environment.",
+  "Explore the world to discover my projects, skills, experience, and other work.",
 ];

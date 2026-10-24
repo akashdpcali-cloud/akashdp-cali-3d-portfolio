@@ -5,11 +5,7 @@ import { Circle } from "lucide-react";
 
 import "./InstructionPopup.css";
 
-const instructionPopupData = [
-  "Welcome to my interactive 3D portfolio, inspired by the visual world of Spider-Verse.",
-  "Use W, A, S, and D to navigate your character through the environment.",
-  "Explore the world to discover my projects, skills, experience, and other work.",
-];
+import { instructionPopupData } from "@/app/data/portfolioData";
 
 export default function InstructionPopup() {
   const [isVisible, setIsVisible] = useState(true);

@@ -5,12 +5,7 @@ import { Volume2, VolumeX } from "lucide-react";
 
 import "./BGMController.css";
 
-const portfolioBGM = [
-  "/audio/bgm1.mp3",
-  "/audio/bgm2.mp3",
-  "/audio/bgm3.mp3",
-  "/audio/bgm4.mp3",
-];
+import { portfolioBGM } from "@/app/data/portfolioData";
 
 export default function BGMController() {
   const audioRef = useRef(null);
