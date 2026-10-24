@@ -2,7 +2,7 @@
   position: fixed;
 
   top: 20px;
-  left: 20px;
+  right: 20px;
 
   z-index: 1000;
 }
@@ -18,7 +18,7 @@
   padding: 0;
 
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
+  border-radius: 50px;
 
   background: rgb(255, 30, 0);
 
@@ -55,6 +55,6 @@
 @media (max-width: 768px) {
   .bgm-speaker-button {
     top: 20px;
-    left: 20px;
+    right: 20px;
   }
 }

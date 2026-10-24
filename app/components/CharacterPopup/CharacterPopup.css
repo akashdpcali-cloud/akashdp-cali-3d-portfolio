@@ -1,0 +1,120 @@
+.character-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(600px, 90vw);
+  padding: 24px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  font-family: "DM Sans", sans-serif;
+}
+
+.character-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.character-popup-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.character-popup-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: #f8fafc;
+  background: transparent;
+  border: 1px solid #475569;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.character-popup-close:hover {
+  background: rgba(253, 31, 1, 0.992);
+  border: rgba(253, 31, 1, 0.992);
+}
+
+.character-display-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.character-display-card {
+  overflow: hidden;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.character-display-card:hover {
+  transform: translateY(-4px);
+  border-color: #38bdf8;
+}
+
+.character-display-picture {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.character-display-picture-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.character-display-card:hover .character-display-picture-img {
+  transform: scale(1.05);
+}
+
+.character-display-fullname {
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+  .character-popup {
+    padding: 16px;
+  }
+
+  .character-popup-title {
+    font-size: 15px;
+  }
+
+  .character-display-grid {
+    gap: 12px;
+  }
+
+  .character-display-fullname {
+    padding: 12px 6px;
+    font-size: 11px;
+  }
+}

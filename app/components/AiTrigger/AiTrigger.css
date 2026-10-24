@@ -1,7 +1,7 @@
 .ai-bot-starter-button {
   position: fixed;
 
-  right: 24px;
+  right: 5px;
   bottom: 50%;
 
   z-index: 1000;
@@ -98,8 +98,8 @@
 
 @media (max-width: 768px) {
   .ai-bot-starter-button {
-    right: 18px;
-    bottom: 50%px;
+    right: 5px;
+    bottom: 50%;
   }
 
   .ai-bot-starter-icon {

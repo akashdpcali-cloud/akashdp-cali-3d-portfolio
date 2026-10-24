@@ -1,0 +1,33 @@
+.character-button {
+  position: fixed;
+  background-color: rgb(255, 30, 0);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f4f7fb;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  right: 20px;
+  top: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  z-index: 1000;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.character-button svg {
+  stroke-width: 3px;
+}
+
+.character-button:hover {
+  transform: scale(1.08);
+  background: rgba(255, 30, 0, 0.725);
+}
+.character-button:active {
+  transform: scale(0.95);
+}

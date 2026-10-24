@@ -27,7 +27,7 @@ export default function BGMController() {
 
     audio.src = portfolioBGM[0];
     audio.currentTime = 0;
-    audio.volume = 0.35;
+    audio.volume = 0.1;
     audio.muted = false;
 
     const playMusic = () => {

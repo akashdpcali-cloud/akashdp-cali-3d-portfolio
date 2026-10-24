@@ -32,3 +32,24 @@ const portfolioData = {
 };
 
 export default portfolioData;
+
+export const characters = [
+  {
+    id: 1,
+    name: "peter",
+    fullname: "Peter Parker",
+    image: "https://i.ibb.co/tphGWGWp/0a9dfbf43d242f044d8167302a31d27a.jpg",
+    idle: "xyz",
+    walk: "abc",
+    run: "pqr",
+  },
+  {
+    id: 2,
+    name: "gwen",
+    fullname: "Gwen Stacy",
+    image: "https://i.ibb.co/chqfmRFW/1f2e96a499ab87a84dde3676c856d6b3.jpg",
+    idle: "xyz",
+    walk: "abc",
+    run: "pqr",
+  },
+];
