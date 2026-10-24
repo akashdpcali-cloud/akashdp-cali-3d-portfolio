@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 
+import ThreeScene from "./components/ThreeScene/ThreeScene";
 import BGMController from "./components/BGMController/BGMController";
 import ClickSound from "./components/ClickSound/ClickSound";
 import Joystick from "./components/Joystick/Joystick";
@@ -17,6 +18,8 @@ export default function Home() {
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   return (
     <main>
+      <ThreeScene />
+
       <InstructionPopup />
       <BGMController />
       <ClickSound />
