@@ -1,0 +1,52 @@
+.run-button {
+  position: fixed;
+  bottom: 65px;
+  right: 50px;
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgb(254, 109, 90);
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1000;
+}
+
+.run-button.running {
+  background: rgb(255, 30, 0);
+  border-color: rgb(255, 30, 0);
+  color: rgb(240, 239, 239);
+}
+
+.run-button:focus-visible {
+  outline: 2px solid rgb(255, 30, 0);
+  outline-offset: 4px;
+}
+
+.run-button svg {
+  color: white;
+  stroke-width: 3px;
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 768px) {
+  .run-button {
+    width: 65px;
+    height: 65px;
+  }
+  .run-button svg {
+    color: white;
+    stroke-width: 3px;
+    width: 40px;
+    height: 40px;
+  }
+}

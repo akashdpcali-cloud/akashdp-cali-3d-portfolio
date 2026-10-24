@@ -11,6 +11,7 @@ import InstructionPopup from "./components/InstructionPopup/InstructionPopup";
 import AiTrigger from "./components/AiTrigger/AiTrigger";
 import AiChatSection from "./components/AiChatSection/AiChatSection";
 import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend";
+import RunButton from "./components/RunButton/RunButton";
 
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
@@ -22,9 +23,11 @@ export default function Home() {
   // Peter is the default character.
   const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
 
+  const [isRunning, setIsRunning] = useState(false);
+
   return (
     <main>
-      <ThreeScene selectedCharacter={selectedCharacter} />
+      <ThreeScene selectedCharacter={selectedCharacter} isRunning={isRunning} />
 
       <InstructionPopup />
       <BGMController />
@@ -48,6 +51,11 @@ export default function Home() {
       <AiChatSection
         isOpen={isAiChatOpen}
         onClose={() => setIsAiChatOpen(false)}
+      />
+
+      <RunButton
+        isRunning={isRunning}
+        onToggle={() => setIsRunning((prev) => !prev)}
       />
 
       {/* <LoadingPage /> */}

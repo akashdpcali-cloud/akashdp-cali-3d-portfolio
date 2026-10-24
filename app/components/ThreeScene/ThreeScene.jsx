@@ -7,7 +7,7 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
-export default function ThreeScene({ selectedCharacter }) {
+export default function ThreeScene({ selectedCharacter, isRunning }) {
   const mountRef = useRef(null);
 
   const sceneRef = useRef(null);
@@ -20,6 +20,7 @@ export default function ThreeScene({ selectedCharacter }) {
   const characterRef = useRef(null);
   const loaderRef = useRef(null);
   const requestRef = useRef(null);
+  const isRunningRef = useRef(false);
 
   const keysRef = useRef({
     w: false,
@@ -45,6 +46,10 @@ export default function ThreeScene({ selectedCharacter }) {
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
   });
+
+  useEffect(() => {
+    isRunningRef.current = isRunning;
+  }, [isRunning]);
 
   // Initialize the Three.js scene only once.
   useEffect(() => {
@@ -103,7 +108,8 @@ export default function ThreeScene({ selectedCharacter }) {
         const joystick = joystickRef.current;
         const walkSpeed = 3;
         const runSpeed = 8;
-        const speed = runningRef.current ? runSpeed : walkSpeed;
+        const shouldRun = runningRef.current || isRunningRef.current;
+        const speed = shouldRun ? runSpeed : walkSpeed;
         const rotationSpeed = 10;
 
         const forward = keys.w || keys.arrowup || joystick.w;
@@ -143,7 +149,7 @@ export default function ThreeScene({ selectedCharacter }) {
         let nextAction = actions.idle;
 
         if (isMoving) {
-          nextAction = runningRef.current ? actions.run : actions.walk;
+          nextAction = shouldRun ? actions.run : actions.walk;
         }
 
         if (nextAction && actions.current !== nextAction) {
