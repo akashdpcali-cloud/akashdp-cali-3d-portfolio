@@ -12,9 +12,25 @@ export default function ThreeScene({ selectedCharacter }) {
 
   const sceneRef = useRef(null);
   const mixerRef = useRef(null);
+  const actionsRef = useRef({
+    idle: null,
+    walk: null,
+    current: null,
+  });
   const characterRef = useRef(null);
   const loaderRef = useRef(null);
   const requestRef = useRef(null);
+
+  const keysRef = useRef({
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+    arrowup: false,
+    arrowdown: false,
+    arrowleft: false,
+    arrowright: false,
+  });
 
   // Initialize the Three.js scene only once.
   useEffect(() => {
@@ -66,6 +82,54 @@ export default function ThreeScene({ selectedCharacter }) {
       requestRef.current = requestAnimationFrame(animate);
 
       const delta = clock.getDelta();
+      const character = characterRef.current;
+
+      if (character) {
+        const keys = keysRef.current;
+        const speed = 5;
+        const rotationSpeed = 10;
+
+        const forward = keys.w || keys.arrowup;
+        const backward = keys.s || keys.arrowdown;
+        const left = keys.a || keys.arrowleft;
+        const right = keys.d || keys.arrowright;
+
+        const isMoving = forward || backward || left || right;
+
+        const direction = new THREE.Vector3(
+          Number(right) - Number(left),
+          0,
+          Number(backward) - Number(forward),
+        );
+
+        if (direction.lengthSq() > 0) {
+          direction.normalize();
+
+          const targetRotation = Math.atan2(direction.x, direction.z);
+
+          const rotationDifference = Math.atan2(
+            Math.sin(targetRotation - character.rotation.y),
+            Math.cos(targetRotation - character.rotation.y),
+          );
+
+          character.rotation.y +=
+            rotationDifference * Math.min(rotationSpeed * delta, 1);
+        }
+
+        if (forward) character.position.z -= speed * delta;
+        if (backward) character.position.z += speed * delta;
+        if (left) character.position.x -= speed * delta;
+        if (right) character.position.x += speed * delta;
+
+        const actions = actionsRef.current;
+        const nextAction = isMoving ? actions.walk : actions.idle;
+
+        if (nextAction && actions.current !== nextAction) {
+          actions.current?.fadeOut(0.2);
+          nextAction.reset().fadeIn(0.2).play();
+          actions.current = nextAction;
+        }
+      }
 
       if (mixerRef.current) {
         mixerRef.current.update(delta);
@@ -89,11 +153,33 @@ export default function ThreeScene({ selectedCharacter }) {
 
     window.addEventListener("resize", handleResize);
 
+    const handleKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+
+      if (key in keysRef.current) {
+        keysRef.current[key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      const key = event.key.toLowerCase();
+
+      if (key in keysRef.current) {
+        keysRef.current[key] = false;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
     return () => {
       disposed = true;
 
       cancelAnimationFrame(requestRef.current);
       window.removeEventListener("resize", handleResize);
+
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
 
       if (mixerRef.current) {
         mixerRef.current.stopAllAction();
@@ -182,13 +268,39 @@ export default function ThreeScene({ selectedCharacter }) {
         const mixer = new THREE.AnimationMixer(fbx);
         mixerRef.current = mixer;
 
-        if (fbx.animations.length > 0) {
-          mixer.clipAction(fbx.animations[0]).play();
+        const idleAction =
+          fbx.animations.length > 0
+            ? mixer.clipAction(fbx.animations[0])
+            : null;
+
+        actionsRef.current = {
+          idle: idleAction,
+          walk: null,
+          current: idleAction,
+        };
+
+        if (idleAction) {
+          idleAction.play();
         } else {
           console.warn(
             `No embedded animation found for ${selectedCharacter.name}.`,
           );
         }
+
+        loader.load(
+          selectedCharacter.walk,
+          (walkFbx) => {
+            if (cancelled || !mixerRef.current) return;
+
+            if (walkFbx.animations.length > 0) {
+              actionsRef.current.walk = mixer.clipAction(walkFbx.animations[0]);
+            }
+          },
+          undefined,
+          (error) => {
+            console.error("Failed to load walk animation:", error);
+          },
+        );
 
         console.log("Character loaded:", selectedCharacter.name);
       },
