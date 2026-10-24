@@ -32,6 +32,13 @@ export default function ThreeScene({ selectedCharacter }) {
     arrowright: false,
   });
 
+  const joystickRef = useRef({
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+  });
+
   // Initialize the Three.js scene only once.
   useEffect(() => {
     const mount = mountRef.current;
@@ -86,13 +93,14 @@ export default function ThreeScene({ selectedCharacter }) {
 
       if (character) {
         const keys = keysRef.current;
+        const joystick = joystickRef.current;
         const speed = 5;
         const rotationSpeed = 10;
 
-        const forward = keys.w || keys.arrowup;
-        const backward = keys.s || keys.arrowdown;
-        const left = keys.a || keys.arrowleft;
-        const right = keys.d || keys.arrowright;
+        const forward = keys.w || keys.arrowup || joystick.w;
+        const backward = keys.s || keys.arrowdown || joystick.s;
+        const left = keys.a || keys.arrowleft || joystick.a;
+        const right = keys.d || keys.arrowright || joystick.d;
 
         const isMoving = forward || backward || left || right;
 
@@ -172,6 +180,19 @@ export default function ThreeScene({ selectedCharacter }) {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
+    const handleJoystickMove = (event) => {
+      const direction = event.detail;
+
+      joystickRef.current = {
+        w: Boolean(direction?.includes("W")),
+        a: Boolean(direction?.includes("A")),
+        s: Boolean(direction?.includes("S")),
+        d: Boolean(direction?.includes("D")),
+      };
+    };
+
+    window.addEventListener("joystickMove", handleJoystickMove);
+
     return () => {
       disposed = true;
 
@@ -180,6 +201,7 @@ export default function ThreeScene({ selectedCharacter }) {
 
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("joystickMove", handleJoystickMove);
 
       if (mixerRef.current) {
         mixerRef.current.stopAllAction();

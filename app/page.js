@@ -35,7 +35,15 @@ export default function Home() {
       />
       {/* <CharacterButton />
       <CharacterPopup /> */}
-      <Joystick />
+      <Joystick
+        onMove={(direction) => {
+          window.dispatchEvent(
+            new CustomEvent("joystickMove", {
+              detail: direction,
+            }),
+          );
+        }}
+      />
       <AiTrigger onClick={() => setIsAiChatOpen(true)} />
       <AiChatSection
         isOpen={isAiChatOpen}
