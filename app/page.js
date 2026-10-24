@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 
+import { characters } from "./data/portfolioData";
+
 import ThreeScene from "./components/ThreeScene/ThreeScene";
 import BGMController from "./components/BGMController/BGMController";
 import ClickSound from "./components/ClickSound/ClickSound";
@@ -16,14 +18,21 @@ import LoadingPage from "./components/LoadingPage/LoadingPage";
 
 export default function Home() {
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+
+  // Peter is the default character.
+  const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
+
   return (
     <main>
-      <ThreeScene />
+      <ThreeScene selectedCharacter={selectedCharacter} />
 
       <InstructionPopup />
       <BGMController />
       <ClickSound />
-      <CharacterFrontend />
+      <CharacterFrontend
+        selectedCharacter={selectedCharacter}
+        onSelectCharacter={setSelectedCharacter}
+      />
       {/* <CharacterButton />
       <CharacterPopup /> */}
       <Joystick />

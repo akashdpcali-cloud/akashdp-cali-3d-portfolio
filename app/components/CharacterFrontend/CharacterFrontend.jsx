@@ -6,12 +6,23 @@ import CharacterPopup from "../CharacterPopup/CharacterPopup";
 
 import { useState } from "react";
 
-export default function CharacterFrontend() {
+export default function CharacterFrontend({
+  selectedCharacter,
+  onSelectCharacter,
+}) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   return (
     <>
       <CharacterButton onClick={() => setIsPopupOpen(true)} />
-      {isPopupOpen && <CharacterPopup onClose={() => setIsPopupOpen(false)} />}
+      <CharacterPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        selectedCharacter={selectedCharacter}
+        onSelectCharacter={(character) => {
+          onSelectCharacter(character);
+          setIsPopupOpen(false);
+        }}
+      />
     </>
   );
 }
