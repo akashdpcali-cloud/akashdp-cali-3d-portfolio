@@ -139,10 +139,15 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
             rotationDifference * Math.min(rotationSpeed * delta, 1);
         }
 
-        if (forward) character.position.z -= speed * delta;
-        if (backward) character.position.z += speed * delta;
-        if (left) character.position.x -= speed * delta;
-        if (right) character.position.x += speed * delta;
+        const moveX = Number(right) - Number(left);
+        const moveZ = Number(backward) - Number(forward);
+
+        const movementLength = Math.sqrt(moveX * moveX + moveZ * moveZ);
+
+        if (movementLength > 0) {
+          character.position.x += (moveX / movementLength) * speed * delta;
+          character.position.z += (moveZ / movementLength) * speed * delta;
+        }
 
         const actions = actionsRef.current;
 
