@@ -11,8 +11,8 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
   const mountRef = useRef(null);
   const cameraRef = useRef(null);
   const cameraOrbitRef = useRef({
-    yaw: 0,
-    pitch: Math.atan2(4, 8),
+    yaw: Math.PI / 4,
+    pitch: Math.atan2(7, 11),
     dragging: false,
     lastX: 0,
     lastY: 0,
@@ -203,19 +203,16 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
         if (isMoving && orbit.userAdjusted) {
           // Reset the camera to its original viewing angle.
-          orbit.yaw = 0;
-          orbit.pitch = Math.atan2(4, 8);
+          orbit.yaw = Math.PI / 4; // 45 degrees
+          orbit.pitch = Math.atan2(7, 11);
 
           orbit.userAdjusted = false;
           orbit.dragging = false;
 
           // Immediately reposition the camera behind the character.
-          camera.position.copy(
-            character.position.clone().add(new THREE.Vector3(0, 4, -8)),
-          );
 
           const lookAtPosition = character.position.clone();
-          lookAtPosition.y += 1.5;
+          lookAtPosition.y += 1.8;
 
           camera.lookAt(lookAtPosition);
         }
@@ -246,10 +243,11 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
             .crossVectors(cameraForward, new THREE.Vector3(0, 1, 0))
             .normalize();
 
-          const movementDirection = new THREE.Vector3()
-            .addScaledVector(cameraRight, -inputX)
-            .addScaledVector(cameraForward, inputZ)
-            .normalize();
+          const movementDirection = new THREE.Vector3(
+            -inputX, // A = -X, D = +X
+            0,
+            -inputZ, // W = -Z, S = +Z
+          ).normalize();
 
           console.log("Movement direction:", movementDirection.toArray());
 
@@ -292,10 +290,16 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       if (character) {
         const orbit = cameraOrbitRef.current;
 
-        const horizontalDistance =
-          (8 * Math.cos(orbit.pitch)) / Math.cos(Math.atan2(4, 8));
+        const cameraDistance = 11;
+        const cameraHeight = 7;
 
-        const verticalDistance = 8 * Math.tan(orbit.pitch);
+        const horizontalDistance =
+          (cameraDistance * Math.cos(orbit.pitch)) /
+          Math.cos(Math.atan2(7, 11));
+
+        const verticalDistance =
+          (cameraDistance * Math.sin(orbit.pitch)) /
+          Math.sin(Math.atan2(7, 11));
 
         const cameraOffset = new THREE.Vector3(
           Math.sin(orbit.yaw) * horizontalDistance,
