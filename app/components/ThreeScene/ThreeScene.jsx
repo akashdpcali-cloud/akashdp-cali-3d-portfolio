@@ -545,7 +545,11 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         camera.position.lerp(targetCameraPosition, Math.min(5 * delta, 1));
 
         const lookAtPosition = cameraTarget.position.clone();
-        lookAtPosition.y += isDrivingRef.current ? -3 : 1.5;
+        lookAtPosition.y += isDrivingRef.current ? 0 : 1.5;
+
+        if (isDrivingRef.current) {
+          lookAtPosition.x += 5;
+        }
 
         camera.lookAt(lookAtPosition);
       }
