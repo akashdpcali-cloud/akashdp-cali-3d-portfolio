@@ -9,7 +9,7 @@ import "./ThreeScene.css";
 
 export default function ThreeScene({ selectedCharacter, isRunning }) {
   const mountRef = useRef(null);
-
+  const cameraRef = useRef(null);
   const sceneRef = useRef(null);
   const mixerRef = useRef(null);
   const actionsRef = useRef({
@@ -67,8 +67,10 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       3000,
     );
 
-    camera.position.set(0, 8, 14);
+    camera.position.set(0, 5, 8);
     camera.lookAt(0, 0, 0);
+
+    cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
 
@@ -162,6 +164,30 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
           nextAction.reset().fadeIn(0.2).play();
           actions.current = nextAction;
         }
+      }
+
+      // TPP camera follows the character
+      if (character) {
+        const cameraOffset = new THREE.Vector3(0, 4, -8);
+
+        // Rotate the offset to stay behind the character
+        cameraOffset.applyAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          character.rotation.y,
+        );
+
+        const targetCameraPosition = character.position
+          .clone()
+          .add(cameraOffset);
+
+        // Smoothly move the camera
+        camera.position.lerp(targetCameraPosition, 5 * delta);
+
+        // Look slightly above the character's feet
+        const lookAtPosition = character.position.clone();
+        lookAtPosition.y += 1.5;
+
+        camera.lookAt(lookAtPosition);
       }
 
       if (mixerRef.current) {
