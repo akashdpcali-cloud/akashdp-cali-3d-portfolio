@@ -167,23 +167,20 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       }
 
       // TPP camera follows the character
-      if (character) {
-        const cameraOffset = new THREE.Vector3(0, 4, -8);
 
-        // Rotate the offset to stay behind the character
-        cameraOffset.applyAxisAngle(
-          new THREE.Vector3(0, 1, 0),
-          character.rotation.y,
-        );
+      // Fixed-direction TPP camera
+      if (character) {
+        // Camera stays at a fixed offset from the character
+        const cameraOffset = new THREE.Vector3(0, 4, -8);
 
         const targetCameraPosition = character.position
           .clone()
           .add(cameraOffset);
 
-        // Smoothly move the camera
+        // Smoothly follow the character's position
         camera.position.lerp(targetCameraPosition, 5 * delta);
 
-        // Look slightly above the character's feet
+        // Always look toward the character
         const lookAtPosition = character.position.clone();
         lookAtPosition.y += 1.5;
 
