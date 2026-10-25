@@ -22,6 +22,9 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
   const requestRef = useRef(null);
   const isRunningRef = useRef(false);
 
+  const cameraForwardRef = useRef(new THREE.Vector3(0, 0, -1));
+  const cameraRightRef = useRef(new THREE.Vector3(1, 0, 0));
+
   const keysRef = useRef({
     w: false,
     a: false,
@@ -53,6 +56,19 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
   // Initialize the Three.js scene only once.
   useEffect(() => {
+    const debugMovement = (event) => {
+      const key = event.key.toLowerCase();
+
+      if (!["w", "a", "s", "d"].includes(key)) return;
+
+      console.log("Key pressed:", key.toUpperCase(), {
+        cameraForward: cameraForwardRef.current.toArray(),
+        cameraRight: cameraRightRef.current.toArray(),
+      });
+    };
+
+    window.addEventListener("keydown", debugMovement);
+
     const mount = mountRef.current;
     if (!mount) return;
 
@@ -121,16 +137,44 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
         const isMoving = forward || backward || left || right;
 
-        const direction = new THREE.Vector3(
-          Number(right) - Number(left),
-          0,
-          Number(backward) - Number(forward),
-        );
+        // Calculate input
+        const moveX = Number(right) - Number(left);
+        const moveZ = Number(backward) - Number(forward);
 
-        if (direction.lengthSq() > 0) {
-          direction.normalize();
+        const movementLength = Math.hypot(moveX, moveZ);
 
-          const targetRotation = Math.atan2(direction.x, direction.z);
+        if (movementLength > 0) {
+          const inputX = moveX / movementLength;
+          const inputZ = moveZ / movementLength;
+
+          console.log("Camera forward:", cameraForwardRef.current.toArray());
+          console.log("Camera right:", cameraRightRef.current.toArray());
+
+          const cameraForward = new THREE.Vector3();
+          camera.getWorldDirection(cameraForward);
+
+          cameraForward.y = 0;
+          cameraForward.normalize();
+
+          // W should move toward the character's viewing direction.
+          cameraForward.negate();
+
+          const cameraRight = new THREE.Vector3()
+            .crossVectors(cameraForward, new THREE.Vector3(0, 1, 0))
+            .normalize();
+
+          const movementDirection = new THREE.Vector3()
+            .addScaledVector(cameraRight, -inputX)
+            .addScaledVector(cameraForward, inputZ)
+            .normalize();
+
+          console.log("Movement direction:", movementDirection.toArray());
+
+          // Rotate the character toward its movement direction
+          const targetRotation = Math.atan2(
+            movementDirection.x,
+            movementDirection.z,
+          );
 
           const rotationDifference = Math.atan2(
             Math.sin(targetRotation - character.rotation.y),
@@ -139,16 +183,10 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
           character.rotation.y +=
             rotationDifference * Math.min(rotationSpeed * delta, 1);
-        }
 
-        const moveX = Number(right) - Number(left);
-        const moveZ = Number(backward) - Number(forward);
-
-        const movementLength = Math.sqrt(moveX * moveX + moveZ * moveZ);
-
-        if (movementLength > 0) {
-          character.position.x += (moveX / movementLength) * speed * delta;
-          character.position.z += (moveZ / movementLength) * speed * delta;
+          // Move relative to the fixed camera directions
+          character.position.x += movementDirection.x * speed * delta;
+          character.position.z += movementDirection.z * speed * delta;
         }
 
         const actions = actionsRef.current;
@@ -165,8 +203,6 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
           actions.current = nextAction;
         }
       }
-
-      // TPP camera follows the character
 
       // Fixed-direction TPP camera
       if (character) {
@@ -258,6 +294,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("joystickMove", handleJoystickMove);
+      window.removeEventListener("keydown", debugMovement);
 
       if (mixerRef.current) {
         mixerRef.current.stopAllAction();
