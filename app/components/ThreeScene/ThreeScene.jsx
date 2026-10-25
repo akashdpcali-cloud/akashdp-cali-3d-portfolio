@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
 export default function ThreeScene({ selectedCharacter, isRunning }) {
+  //Charecter
   const mountRef = useRef(null);
   const cameraRef = useRef(null);
   const cameraOrbitRef = useRef({
@@ -57,6 +59,15 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
   });
+
+  //truck
+  const truckRef = useRef(null);
+  const isDrivingRef = useRef(false);
+  const drivePromptRef = useRef(null);
+  const truckBodyRef = useRef(null);
+
+  const truckFrontWheelsRef = useRef(null);
+  const truckBackWheelsRef = useRef(null);
 
   useEffect(() => {
     isRunningRef.current = isRunning;
@@ -156,6 +167,62 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     canvas.addEventListener("pointerup", handlePointerUp);
     canvas.addEventListener("pointercancel", handlePointerUp);
 
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    const handleTruckClick = (event) => {
+      if (isDrivingRef.current) return;
+
+      const character = characterRef.current;
+      const truck = truckRef.current;
+      const truckBody = truckBodyRef.current;
+      const frontWheels = truckFrontWheelsRef.current;
+      const backWheels = truckBackWheelsRef.current;
+
+      if (!character || !truck || !truckBody) return;
+
+      // Check whether the character is within 5 units of the truck body.
+      const characterPosition = character.getWorldPosition(new THREE.Vector3());
+
+      const bodyBox = new THREE.Box3().setFromObject(truckBody);
+      const closestPoint = bodyBox.clampPoint(
+        characterPosition,
+        new THREE.Vector3(),
+      );
+
+      const distance = characterPosition.distanceTo(closestPoint);
+
+      if (distance > 5) return;
+
+      // Find whether the click hit the truck body or either wheel.
+      const rect = canvas.getBoundingClientRect();
+
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+
+      const clickableObjects = [truckBody, frontWheels, backWheels].filter(
+        Boolean,
+      );
+
+      const hits = raycaster.intersectObjects(clickableObjects, true);
+
+      if (hits.length === 0) return;
+
+      // Enter the truck.
+      isDrivingRef.current = true;
+      character.visible = false;
+
+      if (drivePromptRef.current) {
+        drivePromptRef.current.visible = false;
+      }
+
+      console.log("Entered truck. Distance:", distance);
+    };
+
+    canvas.addEventListener("click", handleTruckClick);
+
     mount.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.HemisphereLight(0xffffff, 0x334155, 2);
@@ -167,6 +234,102 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     scene.add(directionalLight);
 
     const { ground } = InfiniteGround(scene);
+
+    // Load the monster truck.
+    const truckLoader = new GLTFLoader();
+
+    truckLoader.load(
+      "/models/truck/truck.glb",
+      (gltf) => {
+        const truck = gltf.scene;
+
+        truck.traverse((child) => {
+          console.log(
+            "Truck object:",
+            child.name,
+            "World position:",
+            child.getWorldPosition(new THREE.Vector3()),
+          );
+        });
+        const truckBody = truck.getObjectByName("truck_body");
+
+        const truckFrontWheels = truck.getObjectByName("truck_front_wheels");
+        const truckBackWheels = truck.getObjectByName("truck_back_wheels");
+
+        truckBodyRef.current = truckBody;
+        truckFrontWheelsRef.current = truckFrontWheels;
+        truckBackWheelsRef.current = truckBackWheels;
+
+        if (!truckBody) {
+          console.error("truck_body not found in truck.glb");
+          return;
+        }
+
+        truck.position.set(5, 0, 0);
+
+        // Ensure the truck rests on the ground.
+        const box = new THREE.Box3().setFromObject(truck);
+        truck.position.y -= box.min.y;
+
+        truck.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        scene.add(truck);
+        truckRef.current = truck;
+        // Create the "Click to Drive" prompt.
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = 512;
+        canvas.height = 128;
+
+        context.fillStyle = "rgba(15, 23, 42, 0.9)";
+        context.beginPath();
+        context.roundRect(10, 10, 492, 108, 24);
+        context.fill();
+
+        context.fillStyle = "#ffffff";
+        context.font = "bold 42px Arial";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("Click to Drive", 256, 64);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+        });
+
+        const prompt = new THREE.Sprite(material);
+        prompt.scale.set(3, 0.75, 1);
+        prompt.visible = false;
+
+        // Position the prompt above the truck.
+        const truckBox = new THREE.Box3().setFromObject(truck);
+        const bodyBox = new THREE.Box3().setFromObject(truckBody);
+
+        const worldPromptPosition = new THREE.Vector3(
+          (bodyBox.min.x + bodyBox.max.x) / 2,
+          bodyBox.max.y + 1.5,
+          (bodyBox.min.z + bodyBox.max.z) / 2,
+        );
+
+        prompt.position.copy(truck.worldToLocal(worldPromptPosition));
+
+        truck.add(prompt);
+        drivePromptRef.current = prompt;
+
+        console.log("Truck loaded:", truck);
+      },
+      undefined,
+      (error) => {
+        console.error("Failed to load truck:", error);
+      },
+    );
 
     const loader = new FBXLoader();
     loaderRef.current = loader;
@@ -182,6 +345,64 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
       const delta = clock.getDelta();
       const character = characterRef.current;
+      const truck = truckRef.current;
+      const prompt = drivePromptRef.current;
+
+      console.log("Proximity check:", {
+        character: !!character,
+        truck: !!truck,
+        prompt: !!prompt,
+      });
+
+      if (character && truck && prompt && !isDrivingRef.current) {
+        const truckBody = truck.getObjectByName("truck_body");
+        const box = new THREE.Box3().setFromObject(truckBody);
+
+        console.log("Truck body bounds:", {
+          min: box.min.toArray(),
+          max: box.max.toArray(),
+          center: box.getCenter(new THREE.Vector3()).toArray(),
+          size: box.getSize(new THREE.Vector3()).toArray(),
+        });
+        console.log("Truck body found:", !!truckBody);
+
+        if (truckBody) {
+          const characterPosition = new THREE.Vector3();
+          const truckBodyPosition = new THREE.Vector3();
+
+          character.getWorldPosition(characterPosition);
+          truckBody.getWorldPosition(truckBodyPosition);
+
+          console.log("Character world position:", characterPosition);
+          console.log("Truck body world position:", truckBodyPosition);
+          console.log(
+            "Distance to truck body:",
+            characterPosition.distanceTo(truckBodyPosition),
+          );
+
+          const bodyBox = new THREE.Box3().setFromObject(truckBody);
+
+          const closestPoint = new THREE.Vector3();
+          bodyBox.clampPoint(characterPosition, closestPoint);
+
+          const distance = characterPosition.distanceTo(closestPoint);
+          console.log(
+            "Character X/Z:",
+            characterPosition.x,
+            characterPosition.z,
+          );
+          console.log(
+            "Truck body X/Z:",
+            truckBodyPosition.x,
+            truckBodyPosition.z,
+          );
+          console.log("Distance:", distance);
+          console.log("Distance to truck surface:", distance);
+
+          prompt.visible = distance <= 5;
+          console.log("Prompt visible after update:", prompt.visible);
+        }
+      }
 
       if (character) {
         const keys = keysRef.current;
@@ -287,11 +508,16 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
       // Fixed-direction TPP camera
       // TPP camera with mouse-controlled rotation
-      if (character) {
+
+      const cameraTarget = isDrivingRef.current
+        ? truckBodyRef.current
+        : character;
+
+      if (cameraTarget) {
         const orbit = cameraOrbitRef.current;
 
-        const cameraDistance = 8;
-        const cameraHeight = 7;
+        const cameraDistance = isDrivingRef.current ? 8 : 8;
+        const cameraHeight = isDrivingRef.current ? 9 : 7;
 
         const horizontalDistance =
           (cameraDistance * Math.cos(orbit.pitch)) /
@@ -307,16 +533,19 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
           -Math.cos(orbit.yaw) * horizontalDistance,
         );
 
-        const targetCameraPosition = character.position
-          .clone()
-          .add(cameraOffset);
+        const targetPosition = cameraTarget.getWorldPosition(
+          new THREE.Vector3(),
+        );
 
-        // Smoothly follow the character's position.
+        const targetCameraPosition = targetPosition.clone().add(cameraOffset);
+
+        if (isDrivingRef.current) {
+          targetCameraPosition.x += 5;
+        }
         camera.position.lerp(targetCameraPosition, Math.min(5 * delta, 1));
 
-        // Look toward the character's upper body.
-        const lookAtPosition = character.position.clone();
-        lookAtPosition.y += 1.5;
+        const lookAtPosition = cameraTarget.position.clone();
+        lookAtPosition.y += isDrivingRef.current ? -3 : 1.5;
 
         camera.lookAt(lookAtPosition);
       }
