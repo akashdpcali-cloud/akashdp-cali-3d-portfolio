@@ -10,6 +10,14 @@ import "./ThreeScene.css";
 export default function ThreeScene({ selectedCharacter, isRunning }) {
   const mountRef = useRef(null);
   const cameraRef = useRef(null);
+  const cameraOrbitRef = useRef({
+    yaw: 0,
+    pitch: Math.atan2(4, 8),
+    dragging: false,
+    lastX: 0,
+    lastY: 0,
+    userAdjusted: false,
+  });
   const sceneRef = useRef(null);
   const mixerRef = useRef(null);
   const actionsRef = useRef({
@@ -94,6 +102,49 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
 
+    const canvas = renderer.domElement;
+
+    const handlePointerDown = (event) => {
+      if (event.button !== 0) return;
+
+      const orbit = cameraOrbitRef.current;
+
+      orbit.dragging = true;
+      orbit.lastX = event.clientX;
+      orbit.lastY = event.clientY;
+
+      canvas.setPointerCapture(event.pointerId);
+    };
+
+    const handlePointerMove = (event) => {
+      const orbit = cameraOrbitRef.current;
+
+      if (!orbit.dragging) return;
+
+      const deltaX = event.clientX - orbit.lastX;
+      const deltaY = event.clientY - orbit.lastY;
+
+      orbit.lastX = event.clientX;
+      orbit.lastY = event.clientY;
+
+      orbit.yaw -= deltaX * 0.005;
+      orbit.pitch += deltaY * 0.005;
+
+      // Prevent the camera from flipping upside down or going below ground.
+      orbit.pitch = THREE.MathUtils.clamp(orbit.pitch, 0.05, 1.45);
+
+      orbit.userAdjusted = true;
+    };
+
+    const handlePointerUp = () => {
+      cameraOrbitRef.current.dragging = false;
+    };
+
+    canvas.addEventListener("pointerdown", handlePointerDown);
+    canvas.addEventListener("pointermove", handlePointerMove);
+    canvas.addEventListener("pointerup", handlePointerUp);
+    canvas.addEventListener("pointercancel", handlePointerUp);
+
     mount.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.HemisphereLight(0xffffff, 0x334155, 2);
@@ -136,6 +187,27 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         const right = keys.d || keys.arrowright || joystick.d;
 
         const isMoving = forward || backward || left || right;
+
+        const orbit = cameraOrbitRef.current;
+
+        if (isMoving && orbit.userAdjusted) {
+          // Reset the camera to its original viewing angle.
+          orbit.yaw = 0;
+          orbit.pitch = Math.atan2(4, 8);
+
+          orbit.userAdjusted = false;
+          orbit.dragging = false;
+
+          // Immediately reposition the camera behind the character.
+          camera.position.copy(
+            character.position.clone().add(new THREE.Vector3(0, 4, -8)),
+          );
+
+          const lookAtPosition = character.position.clone();
+          lookAtPosition.y += 1.5;
+
+          camera.lookAt(lookAtPosition);
+        }
 
         // Calculate input
         const moveX = Number(right) - Number(left);
@@ -205,18 +277,29 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       }
 
       // Fixed-direction TPP camera
+      // TPP camera with mouse-controlled rotation
       if (character) {
-        // Camera stays at a fixed offset from the character
-        const cameraOffset = new THREE.Vector3(0, 4, -8);
+        const orbit = cameraOrbitRef.current;
+
+        const horizontalDistance =
+          (8 * Math.cos(orbit.pitch)) / Math.cos(Math.atan2(4, 8));
+
+        const verticalDistance = 8 * Math.tan(orbit.pitch);
+
+        const cameraOffset = new THREE.Vector3(
+          Math.sin(orbit.yaw) * horizontalDistance,
+          verticalDistance,
+          -Math.cos(orbit.yaw) * horizontalDistance,
+        );
 
         const targetCameraPosition = character.position
           .clone()
           .add(cameraOffset);
 
-        // Smoothly follow the character's position
-        camera.position.lerp(targetCameraPosition, 5 * delta);
+        // Smoothly follow the character's position.
+        camera.position.lerp(targetCameraPosition, Math.min(5 * delta, 1));
 
-        // Always look toward the character
+        // Look toward the character's upper body.
         const lookAtPosition = character.position.clone();
         lookAtPosition.y += 1.5;
 
@@ -295,6 +378,11 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("joystickMove", handleJoystickMove);
       window.removeEventListener("keydown", debugMovement);
+
+      canvas.removeEventListener("pointerdown", handlePointerDown);
+      canvas.removeEventListener("pointermove", handlePointerMove);
+      canvas.removeEventListener("pointerup", handlePointerUp);
+      canvas.removeEventListener("pointercancel", handlePointerUp);
 
       if (mixerRef.current) {
         mixerRef.current.stopAllAction();
