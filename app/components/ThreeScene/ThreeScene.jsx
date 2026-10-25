@@ -348,6 +348,30 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       const truck = truckRef.current;
       const prompt = drivePromptRef.current;
 
+      const orbit = cameraOrbitRef.current;
+      const keys = keysRef.current;
+      const joystick = joystickRef.current;
+
+      const isMoving =
+        keys.w ||
+        keys.a ||
+        keys.s ||
+        keys.d ||
+        keys.arrowup ||
+        keys.arrowdown ||
+        keys.arrowleft ||
+        keys.arrowright ||
+        joystick.w ||
+        joystick.a ||
+        joystick.s ||
+        joystick.d;
+
+      if (orbit.userAdjusted && isMoving) {
+        orbit.yaw = Math.PI / 4;
+        orbit.pitch = Math.atan2(7, 11);
+        orbit.userAdjusted = false;
+      }
+
       console.log("Proximity check:", {
         character: !!character,
         truck: !!truck,
@@ -404,7 +428,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         }
       }
 
-      if (character) {
+      if (character && !isDrivingRef.current) {
         const keys = keysRef.current;
         const joystick = joystickRef.current;
         const walkSpeed = 3;
@@ -422,20 +446,15 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
         const orbit = cameraOrbitRef.current;
 
-        if (isMoving && orbit.userAdjusted) {
-          // Reset the camera to its original viewing angle.
-          orbit.yaw = Math.PI / 4; // 45 degrees
+        if (
+          orbit.userAdjusted &&
+          (isMoving || (truck && isDrivingRef.current))
+        ) {
+          orbit.yaw = Math.PI / 4;
           orbit.pitch = Math.atan2(7, 11);
 
           orbit.userAdjusted = false;
           orbit.dragging = false;
-
-          // Immediately reposition the camera behind the character.
-
-          const lookAtPosition = character.position.clone();
-          lookAtPosition.y += 1.8;
-
-          camera.lookAt(lookAtPosition);
         }
 
         // Calculate input
@@ -506,6 +525,49 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         }
       }
 
+      // Monster truck driving controls
+      if (truck && isDrivingRef.current) {
+        const keys = keysRef.current;
+        const joystick = joystickRef.current;
+
+        const forward = keys.w || keys.arrowup || joystick.w;
+        const backward = keys.s || keys.arrowdown || joystick.s;
+        const left = keys.a || keys.arrowleft || joystick.a;
+        const right = keys.d || keys.arrowright || joystick.d;
+
+        const throttle = Number(forward) - Number(backward);
+        const steering = Number(right) - Number(left);
+
+        const driveSpeed = 8;
+        const turnSpeed = 1.5;
+
+        // Move in the direction the truck is facing.
+        if (throttle !== 0) {
+          truck.position.x -=
+            Math.sin(truck.rotation.y) * throttle * driveSpeed * delta;
+
+          truck.position.z +=
+            Math.cos(truck.rotation.y) * throttle * driveSpeed * delta;
+        }
+
+        // Turn while moving.
+        if (throttle !== 0 && steering !== 0) {
+          truck.rotation.y -=
+            steering * turnSpeed * delta * Math.sign(throttle);
+        }
+
+        // Animate the wheels.
+        if (truckFrontWheelsRef.current) {
+          truckFrontWheelsRef.current.rotation.x +=
+            throttle * driveSpeed * delta;
+        }
+
+        if (truckBackWheelsRef.current) {
+          truckBackWheelsRef.current.rotation.x +=
+            throttle * driveSpeed * delta;
+        }
+      }
+
       // Fixed-direction TPP camera
       // TPP camera with mouse-controlled rotation
 
@@ -539,17 +601,12 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
         const targetCameraPosition = targetPosition.clone().add(cameraOffset);
 
-        if (isDrivingRef.current) {
-          targetCameraPosition.x += 5;
-        }
         camera.position.lerp(targetCameraPosition, Math.min(5 * delta, 1));
 
-        const lookAtPosition = cameraTarget.position.clone();
-        lookAtPosition.y += isDrivingRef.current ? 0 : 1.5;
+        const lookAtPosition = targetPosition.clone();
+        lookAtPosition.y += isDrivingRef.current ? 1 : 1.5;
 
-        if (isDrivingRef.current) {
-          lookAtPosition.x += 5;
-        }
+        camera.lookAt(lookAtPosition);
 
         camera.lookAt(lookAtPosition);
       }
