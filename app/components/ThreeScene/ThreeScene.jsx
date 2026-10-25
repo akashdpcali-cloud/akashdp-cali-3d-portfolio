@@ -290,7 +290,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       if (character) {
         const orbit = cameraOrbitRef.current;
 
-        const cameraDistance = 11;
+        const cameraDistance = 8;
         const cameraHeight = 7;
 
         const horizontalDistance =
