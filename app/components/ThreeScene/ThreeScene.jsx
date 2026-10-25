@@ -104,8 +104,11 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
     const canvas = renderer.domElement;
 
+    canvas.style.touchAction = "none";
+
     const handlePointerDown = (event) => {
-      if (event.button !== 0) return;
+      // Only respond to the primary mouse button or a touch.
+      if (event.pointerType === "mouse" && event.button !== 0) return;
 
       const orbit = cameraOrbitRef.current;
 
@@ -130,15 +133,23 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       orbit.yaw -= deltaX * 0.005;
       orbit.pitch += deltaY * 0.005;
 
-      // Prevent the camera from flipping upside down or going below ground.
       orbit.pitch = THREE.MathUtils.clamp(orbit.pitch, 0.05, 1.45);
 
       orbit.userAdjusted = true;
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (event) => {
       cameraOrbitRef.current.dragging = false;
+
+      if (canvas.hasPointerCapture(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
     };
+
+    canvas.addEventListener("pointerdown", handlePointerDown);
+    canvas.addEventListener("pointermove", handlePointerMove);
+    canvas.addEventListener("pointerup", handlePointerUp);
+    canvas.addEventListener("pointercancel", handlePointerUp);
 
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointermove", handlePointerMove);
