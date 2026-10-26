@@ -20,6 +20,13 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     lastY: 0,
     userAdjusted: false,
   });
+  const truckCameraOrbitRef = useRef({
+    yaw: Math.PI / 4,
+    pitch: Math.atan2(5, 10),
+    dragging: false,
+    lastX: 0,
+    lastY: 0,
+  });
   const sceneRef = useRef(null);
   const mixerRef = useRef(null);
   const actionsRef = useRef({
@@ -124,11 +131,17 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
     canvas.style.touchAction = "none";
 
+    const activeOrbitRef = { current: null };
+
     const handlePointerDown = (event) => {
-      // Only respond to the primary mouse button or a touch.
       if (event.pointerType === "mouse" && event.button !== 0) return;
 
-      const orbit = cameraOrbitRef.current;
+      // Choose the camera controls for the current mode.
+      const orbit = isDrivingRef.current
+        ? truckCameraOrbitRef.current
+        : cameraOrbitRef.current;
+
+      activeOrbitRef.current = orbit;
 
       orbit.dragging = true;
       orbit.lastX = event.clientX;
@@ -138,9 +151,9 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
     };
 
     const handlePointerMove = (event) => {
-      const orbit = cameraOrbitRef.current;
+      const orbit = activeOrbitRef.current;
 
-      if (!orbit.dragging) return;
+      if (!orbit || !orbit.dragging) return;
 
       const deltaX = event.clientX - orbit.lastX;
       const deltaY = event.clientY - orbit.lastY;
@@ -153,21 +166,22 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
       orbit.pitch = THREE.MathUtils.clamp(orbit.pitch, 0.05, 1.45);
 
-      orbit.userAdjusted = true;
+      // Only the character camera uses this flag.
+      if (!isDrivingRef.current) {
+        orbit.userAdjusted = true;
+      }
     };
 
     const handlePointerUp = (event) => {
-      cameraOrbitRef.current.dragging = false;
+      if (activeOrbitRef.current) {
+        activeOrbitRef.current.dragging = false;
+        activeOrbitRef.current = null;
+      }
 
       if (canvas.hasPointerCapture(event.pointerId)) {
         canvas.releasePointerCapture(event.pointerId);
       }
     };
-
-    canvas.addEventListener("pointerdown", handlePointerDown);
-    canvas.addEventListener("pointermove", handlePointerMove);
-    canvas.addEventListener("pointerup", handlePointerUp);
-    canvas.addEventListener("pointercancel", handlePointerUp);
 
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointermove", handlePointerMove);
@@ -409,7 +423,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         joystick.s ||
         joystick.d;
 
-      if (orbit.userAdjusted && isMoving) {
+      if (orbit.userAdjusted && isMoving && !isDrivingRef.current) {
         orbit.yaw = Math.PI / 4;
         orbit.pitch = Math.atan2(7, 11);
         orbit.userAdjusted = false;
@@ -489,15 +503,10 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
         const orbit = cameraOrbitRef.current;
 
-        if (
-          orbit.userAdjusted &&
-          (isMoving || (truck && isDrivingRef.current))
-        ) {
+        if (orbit.userAdjusted && isMoving && !isDrivingRef.current) {
           orbit.yaw = Math.PI / 4;
           orbit.pitch = Math.atan2(7, 11);
-
           orbit.userAdjusted = false;
-          orbit.dragging = false;
         }
 
         // Calculate input
@@ -644,18 +653,39 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         }
       }
 
-      // Fixed-direction TPP camera
-      // TPP camera with mouse-controlled rotation
+      // Camera follows the truck without rotating with the truck.
+      if (isDrivingRef.current && truckBodyRef.current) {
+        const orbit = truckCameraOrbitRef.current;
 
-      const cameraTarget = isDrivingRef.current
-        ? truckBodyRef.current
-        : character;
+        // Follow the truck body's world position.
+        const targetPosition = truckBodyRef.current.getWorldPosition(
+          new THREE.Vector3(),
+        );
 
-      if (cameraTarget) {
+        const cameraDistance = 10;
+
+        // This offset uses world coordinates, not the truck's rotation.
+        const cameraOffset = new THREE.Vector3(
+          Math.sin(orbit.yaw) * cameraDistance * Math.cos(orbit.pitch),
+
+          cameraDistance * Math.sin(orbit.pitch),
+
+          -Math.cos(orbit.yaw) * cameraDistance * Math.cos(orbit.pitch),
+        );
+
+        const targetCameraPosition = targetPosition.clone().add(cameraOffset);
+
+        // Follow immediately so turning does not cause camera lag or swing.
+        camera.position.copy(targetCameraPosition);
+
+        const lookAtPosition = targetPosition.clone();
+        lookAtPosition.y += 1.5;
+
+        camera.lookAt(lookAtPosition);
+      } else if (character) {
+        // Existing character TPP camera behavior remains unchanged.
         const orbit = cameraOrbitRef.current;
-
-        const cameraDistance = isDrivingRef.current ? 8 : 8;
-        const cameraHeight = isDrivingRef.current ? 9 : 7;
+        const cameraDistance = 8;
 
         const horizontalDistance =
           (cameraDistance * Math.cos(orbit.pitch)) /
@@ -671,25 +701,14 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
           -Math.cos(orbit.yaw) * horizontalDistance,
         );
 
-        if (isDrivingRef.current && truck) {
-          cameraOffset.applyAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            truck.rotation.y,
-          );
-        }
-
-        const targetPosition = cameraTarget.getWorldPosition(
-          new THREE.Vector3(),
-        );
+        const targetPosition = character.getWorldPosition(new THREE.Vector3());
 
         const targetCameraPosition = targetPosition.clone().add(cameraOffset);
 
         camera.position.lerp(targetCameraPosition, Math.min(5 * delta, 1));
 
         const lookAtPosition = targetPosition.clone();
-        lookAtPosition.y += isDrivingRef.current ? 1 : 1.5;
-
-        camera.lookAt(lookAtPosition);
+        lookAtPosition.y += 1.5;
 
         camera.lookAt(lookAtPosition);
       }
