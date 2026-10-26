@@ -92,6 +92,64 @@ export default function ThreeScene({
     isRunningRef.current = isRunning;
   }, [isRunning]);
 
+  useEffect(() => {
+    const handleTruckShortcut = (event) => {
+      if (event.key.toLowerCase() !== "f" || event.repeat) return;
+
+      // Don't trigger the shortcut while typing in an input.
+      const target = event.target;
+
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+
+      // If already driving, exit the truck.
+      if (isDrivingRef.current) {
+        window.dispatchEvent(new CustomEvent("exitTruck"));
+        return;
+      }
+
+      const character = characterRef.current;
+      const truckBody = truckBodyRef.current;
+
+      if (!character || !truckBody) return;
+
+      // Get world positions for the character and truck body.
+      const characterPosition = new THREE.Vector3();
+      const truckBodyPosition = new THREE.Vector3();
+
+      character.getWorldPosition(characterPosition);
+      truckBody.getWorldPosition(truckBodyPosition);
+
+      // Only enter when close enough to the truck body.
+      const distance = characterPosition.distanceTo(truckBodyPosition);
+
+      if (distance > 7) return;
+
+      // Enter the truck.
+      isDrivingRef.current = true;
+      character.visible = false;
+
+      if (drivePromptRef.current) {
+        drivePromptRef.current.visible = false;
+      }
+
+      onEnterTruck?.();
+    };
+
+    window.addEventListener("keydown", handleTruckShortcut);
+
+    return () => {
+      window.removeEventListener("keydown", handleTruckShortcut);
+    };
+  }, [onEnterTruck]);
+
   // Keep the internal Three.js driving flag synchronized with React state.
 
   // Initialize the Three.js scene only once.
