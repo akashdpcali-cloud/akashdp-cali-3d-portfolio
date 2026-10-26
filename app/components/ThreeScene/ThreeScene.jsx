@@ -608,7 +608,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x = originalRotation.x + throttle * driveSpeed * delta;
+          wheel.rotation.x += throttle * driveSpeed * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
@@ -626,7 +626,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x = originalRotation.x + throttle * driveSpeed * delta;
+          wheel.rotation.x += throttle * driveSpeed * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
