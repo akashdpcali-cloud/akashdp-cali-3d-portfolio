@@ -8,7 +8,12 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
-export default function ThreeScene({ selectedCharacter, isRunning }) {
+export default function ThreeScene({
+  selectedCharacter,
+  isRunning,
+  onEnterTruck,
+  onExitTruck,
+}) {
   //Charecter
   const mountRef = useRef(null);
   const cameraRef = useRef(null);
@@ -86,6 +91,8 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
+
+  // Keep the internal Three.js driving flag synchronized with React state.
 
   // Initialize the Three.js scene only once.
   useEffect(() => {
@@ -243,10 +250,65 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         drivePromptRef.current.visible = false;
       }
 
+      // Tell React to replace the Run button with the Exit button.
+      onEnterTruck?.();
+
       console.log("Entered truck. Distance:", distance);
     };
 
     canvas.addEventListener("click", handleTruckClick);
+
+    // Called when the user clicks the React Exit Truck button.
+    const handleExitTruck = () => {
+      const character = characterRef.current;
+      const truckBody = truckBodyRef.current;
+
+      if (!character || !truckBody) return;
+
+      // Calculate the exit position beside the truck body.
+      truckBody.updateWorldMatrix(true, false);
+
+      const exitOffset = new THREE.Vector3(-3, 0, 0);
+      const exitPosition = truckBody.localToWorld(exitOffset);
+
+      // Keep the character's existing Y position.
+      exitPosition.y = character.position.y;
+
+      character.position.copy(exitPosition);
+      character.visible = true;
+
+      // Exit driving mode.
+      isDrivingRef.current = false;
+
+      // Reset keyboard inputs without changing their expected structure.
+      keysRef.current = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+        arrowup: false,
+        arrowdown: false,
+        arrowleft: false,
+        arrowright: false,
+      };
+
+      // Reset joystick inputs.
+      joystickRef.current = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
+
+      // Hide the prompt safely.
+      if (drivePromptRef.current?.style) {
+        drivePromptRef.current.style.display = "none";
+      }
+
+      // Notify the parent component.
+      onExitTruck?.();
+    };
+    window.addEventListener("exitTruck", handleExitTruck);
 
     mount.appendChild(renderer.domElement);
 
@@ -719,7 +781,6 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
       renderer.render(scene, camera);
     }
-
     animate();
 
     function handleResize() {
@@ -784,6 +845,7 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("joystickMove", handleJoystickMove);
+      window.removeEventListener("exitTruck", handleExitTruck);
       window.removeEventListener("keydown", debugMovement);
 
       canvas.removeEventListener("pointerdown", handlePointerDown);

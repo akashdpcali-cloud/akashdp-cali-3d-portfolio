@@ -12,6 +12,7 @@ import AiTrigger from "./components/AiTrigger/AiTrigger";
 import AiChatSection from "./components/AiChatSection/AiChatSection";
 import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend";
 import RunButton from "./components/RunButton/RunButton";
+import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
 
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
@@ -24,10 +25,20 @@ export default function Home() {
   const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
 
   const [isRunning, setIsRunning] = useState(false);
+  const [isDriving, setIsDriving] = useState(false);
 
   return (
     <main>
-      <ThreeScene selectedCharacter={selectedCharacter} isRunning={isRunning} />
+      <ThreeScene
+        selectedCharacter={selectedCharacter}
+        isRunning={isRunning}
+        isDriving={isDriving}
+        onEnterTruck={() => setIsDriving(true)}
+        onExitTruck={() => {
+          setIsDriving(false);
+          setIsRunning(false);
+        }}
+      />
 
       <InstructionPopup />
       <BGMController />
@@ -53,10 +64,18 @@ export default function Home() {
         onClose={() => setIsAiChatOpen(false)}
       />
 
-      <RunButton
-        isRunning={isRunning}
-        onToggle={() => setIsRunning((prev) => !prev)}
-      />
+      {isDriving ? (
+        <ExitTruckButton
+          onExit={() => {
+            window.dispatchEvent(new CustomEvent("exitTruck"));
+          }}
+        />
+      ) : (
+        <RunButton
+          isRunning={isRunning}
+          onToggle={() => setIsRunning((prev) => !prev)}
+        />
+      )}
 
       {/* <LoadingPage /> */}
 
