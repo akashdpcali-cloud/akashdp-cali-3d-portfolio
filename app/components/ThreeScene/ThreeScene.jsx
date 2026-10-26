@@ -66,8 +66,15 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
   const drivePromptRef = useRef(null);
   const truckBodyRef = useRef(null);
 
-  const truckFrontWheelsRef = useRef(null);
+  const truckFrontLeftWheelRef = useRef(null);
+  const truckFrontRightWheelRef = useRef(null);
   const truckBackWheelsRef = useRef(null);
+
+  const truckFrontLeftOriginalYRef = useRef(0);
+  const truckFrontRightOriginalYRef = useRef(0);
+
+  const truckFrontLeftOriginalRotationRef = useRef(new THREE.Euler());
+  const truckFrontRightOriginalRotationRef = useRef(new THREE.Euler());
 
   useEffect(() => {
     isRunningRef.current = isRunning;
@@ -176,7 +183,8 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
       const character = characterRef.current;
       const truck = truckRef.current;
       const truckBody = truckBodyRef.current;
-      const frontWheels = truckFrontWheelsRef.current;
+      const frontLeftWheel = truckFrontLeftWheelRef.current;
+      const frontRightWheel = truckFrontRightWheelRef.current;
       const backWheels = truckBackWheelsRef.current;
 
       if (!character || !truck || !truckBody) return;
@@ -202,9 +210,12 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
 
       raycaster.setFromCamera(pointer, camera);
 
-      const clickableObjects = [truckBody, frontWheels, backWheels].filter(
-        Boolean,
-      );
+      const clickableObjects = [
+        truckBody,
+        frontLeftWheel,
+        frontRightWheel,
+        backWheels,
+      ].filter(Boolean);
 
       const hits = raycaster.intersectObjects(clickableObjects, true);
 
@@ -253,12 +264,44 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         });
         const truckBody = truck.getObjectByName("truck_body");
 
-        const truckFrontWheels = truck.getObjectByName("truck_front_wheels");
+        const truckFrontLeftWheel = truck.getObjectByName(
+          "truck_front_left_wheel",
+        );
+
+        const truckFrontRightWheel = truck.getObjectByName(
+          "truck_front_right_wheel",
+        );
+
+        if (truckFrontLeftWheel) {
+          truckFrontLeftOriginalRotationRef.current.copy(
+            truckFrontLeftWheel.rotation,
+          );
+        }
+
+        if (truckFrontRightWheel) {
+          truckFrontRightOriginalRotationRef.current.copy(
+            truckFrontRightWheel.rotation,
+          );
+        }
+
+        truckFrontLeftOriginalYRef.current = truckFrontLeftWheel
+          ? truckFrontLeftWheel.rotation.y
+          : 0;
+
+        truckFrontRightOriginalYRef.current = truckFrontRightWheel
+          ? truckFrontRightWheel.rotation.y
+          : 0;
+
         const truckBackWheels = truck.getObjectByName("truck_back_wheels");
 
         truckBodyRef.current = truckBody;
-        truckFrontWheelsRef.current = truckFrontWheels;
+        truckFrontLeftWheelRef.current = truckFrontLeftWheel;
+        truckFrontRightWheelRef.current = truckFrontRightWheel;
         truckBackWheelsRef.current = truckBackWheels;
+
+        if (!truckFrontLeftWheel || !truckFrontRightWheel || !truckBackWheels) {
+          console.error("One or more truck wheel objects could not be found.");
+        }
 
         if (!truckBody) {
           console.error("truck_body not found in truck.glb");
@@ -557,11 +600,44 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
         }
 
         // Animate the wheels.
-        if (truckFrontWheelsRef.current) {
-          truckFrontWheelsRef.current.rotation.x +=
-            throttle * driveSpeed * delta;
+
+        // Front-left wheel: roll and steer
+        if (truckFrontLeftWheelRef.current) {
+          const wheel = truckFrontLeftWheelRef.current;
+          const originalRotation = truckFrontLeftOriginalRotationRef.current;
+
+          wheel.rotation.order = "YXZ";
+
+          wheel.rotation.x = originalRotation.x + throttle * driveSpeed * delta;
+
+          wheel.rotation.y = THREE.MathUtils.lerp(
+            wheel.rotation.y,
+            truckFrontLeftOriginalYRef.current - steering * 0.5,
+            Math.min(10 * delta, 1),
+          );
+
+          wheel.rotation.z = originalRotation.z;
         }
 
+        // Front-right wheel: roll and steer
+        if (truckFrontRightWheelRef.current) {
+          const wheel = truckFrontRightWheelRef.current;
+          const originalRotation = truckFrontRightOriginalRotationRef.current;
+
+          wheel.rotation.order = "YXZ";
+
+          wheel.rotation.x = originalRotation.x + throttle * driveSpeed * delta;
+
+          wheel.rotation.y = THREE.MathUtils.lerp(
+            wheel.rotation.y,
+            truckFrontRightOriginalYRef.current - steering * 0.5,
+            Math.min(10 * delta, 1),
+          );
+
+          wheel.rotation.z = originalRotation.z;
+        }
+
+        // Rear wheels: roll only
         if (truckBackWheelsRef.current) {
           truckBackWheelsRef.current.rotation.x +=
             throttle * driveSpeed * delta;
@@ -594,6 +670,13 @@ export default function ThreeScene({ selectedCharacter, isRunning }) {
           verticalDistance,
           -Math.cos(orbit.yaw) * horizontalDistance,
         );
+
+        if (isDrivingRef.current && truck) {
+          cameraOffset.applyAxisAngle(
+            new THREE.Vector3(0, 1, 0),
+            truck.rotation.y,
+          );
+        }
 
         const targetPosition = cameraTarget.getWorldPosition(
           new THREE.Vector3(),
