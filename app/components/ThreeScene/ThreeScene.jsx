@@ -635,6 +635,13 @@ export default function ThreeScene({
 
         const movementLength = Math.hypot(moveX, moveZ);
 
+        const truckCollisionObjects = [
+          truckBodyRef.current,
+          truckBackWheelsRef.current,
+          truckFrontLeftWheelRef.current,
+          truckFrontRightWheelRef.current,
+        ].filter(Boolean);
+
         if (movementLength > 0) {
           const inputX = moveX / movementLength;
           const inputZ = moveZ / movementLength;
@@ -678,8 +685,111 @@ export default function ThreeScene({
             rotationDifference * Math.min(rotationSpeed * delta, 1);
 
           // Move relative to the fixed camera directions
-          character.position.x += movementDirection.x * speed * delta;
-          character.position.z += movementDirection.z * speed * delta;
+          // Calculate where the character would move next.
+          // Calculate the proposed movement.
+          // Collision objects on the truck.
+          // Truck parts that block the character.
+          const truckCollisionObjects = [
+            truckBodyRef.current,
+            truckBackWheelsRef.current,
+            truckFrontLeftWheelRef.current,
+            truckFrontRightWheelRef.current,
+          ].filter(Boolean);
+
+          // Create a smaller collision box around the character.
+          character.updateWorldMatrix(true, true);
+
+          const characterBounds = new THREE.Box3().setFromObject(character);
+          const characterSize = new THREE.Vector3();
+          characterBounds.getSize(characterSize);
+
+          // Reduce the box so animations and outstretched limbs don't block movement.
+          const halfWidth = Math.min(characterSize.x * 0.25, 0.35);
+          const halfDepth = Math.min(characterSize.z * 0.25, 0.35);
+
+          const characterCenter = new THREE.Vector3();
+          characterBounds.getCenter(characterCenter);
+
+          const collisionBox = new THREE.Box3(
+            new THREE.Vector3(
+              characterCenter.x - halfWidth,
+              characterBounds.min.y,
+              characterCenter.z - halfDepth,
+            ),
+            new THREE.Vector3(
+              characterCenter.x + halfWidth,
+              characterBounds.max.y,
+              characterCenter.z + halfDepth,
+            ),
+          );
+
+          // Test whether the character can move to a proposed position.
+          const canMoveTo = (testPosition) => {
+            const offset = testPosition.clone().sub(character.position);
+            const testBox = collisionBox.clone().translate(offset);
+
+            for (const part of truckCollisionObjects) {
+              part.updateWorldMatrix(true, true);
+
+              const truckBox = new THREE.Box3().setFromObject(part);
+
+              // 1. FIND THE CENTER OF THE TRUCK BOX
+              const truckCenter = new THREE.Vector3();
+              truckBox.getCenter(truckCenter);
+
+              // 2. REDUCE THE X-AXIS RANGE (WIDTH)
+              // 0.7 means it shrinks the hitbox to 70% of its original side-to-side width.
+              // Lower this number (e.g., 0.5) to make the hitbox even narrower.
+              const xScaleFactor = 0.7;
+              const halfX =
+                (truckBox.max.x - truckBox.min.x) * 0.5 * xScaleFactor;
+
+              truckBox.min.x = truckCenter.x - halfX;
+              truckBox.max.x = truckCenter.x + halfX;
+
+              // 3. REDUCE THE Z-AXIS RANGE (DEPTH)
+              const zScaleFactor = 0.7;
+              const halfZ =
+                (truckBox.max.z - truckBox.min.z) * 0.5 * zScaleFactor;
+
+              truckBox.min.z = truckCenter.z - halfZ;
+              truckBox.max.z = truckCenter.z + halfZ;
+
+              // 4. SHIFT THE BOX FORWARD OR BACKWARD ALONG Z (Your alignment fix)
+              const zOffset = 0.6;
+              truckBox.min.z += zOffset;
+              truckBox.max.z += zOffset;
+
+              // OPTIONAL: Add an xOffset here if the side hitboxes are misaligned left/right
+              // const xOffset = 0.0;
+              // truckBox.min.x += xOffset;
+              // truckBox.max.x += xOffset;
+
+              if (testBox.intersectsBox(truckBox)) {
+                return false;
+              }
+            }
+
+            return true;
+          };
+
+          // Resolve X and Z separately to allow sliding around the truck.
+          const moveStepX = movementDirection.x * speed * delta;
+          const moveStepZ = movementDirection.z * speed * delta;
+
+          const nextX = character.position.clone();
+          nextX.x += moveStepX;
+
+          if (canMoveTo(nextX)) {
+            character.position.x = nextX.x;
+          }
+
+          const nextZ = character.position.clone();
+          nextZ.z += moveStepZ;
+
+          if (canMoveTo(nextZ)) {
+            character.position.z = nextZ.z;
+          }
         }
 
         const actions = actionsRef.current;

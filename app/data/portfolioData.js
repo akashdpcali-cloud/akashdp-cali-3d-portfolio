@@ -69,6 +69,7 @@ export const portfolioBGM = [
 
 export const instructionPopupData = [
   "Welcome to my interactive 3D portfolio, inspired by the visual world of Spider-Verse.",
-  "Use W, A, S, and D to navigate your character through the environment.",
+  "Character Movement: keys(W A S D ) or the virtual joystick.",
+  "360° View: Click + Drag on screen to look around",
   "Explore the world to discover my projects, skills, experience, and other work.",
 ];
