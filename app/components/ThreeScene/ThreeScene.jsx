@@ -397,6 +397,7 @@ export default function ThreeScene({
             child.getWorldPosition(new THREE.Vector3()),
           );
         });
+
         const truckBody = truck.getObjectByName("truck_body");
 
         const truckFrontLeftWheel = truck.getObjectByName(
@@ -848,22 +849,51 @@ export default function ThreeScene({
         const throttle = Number(forward) - Number(backward);
         const steering = Number(right) - Number(left);
 
-        const driveSpeed = 8;
+        const driveSpeed = 15;
         const turnSpeed = 1.5;
 
         // Move in the direction the truck is facing.
-        if (throttle !== 0) {
-          truck.position.x -=
-            Math.sin(truck.rotation.y) * throttle * driveSpeed * delta;
+        // Get the truck's forward direction in world space.
+        const forwardDirection = new THREE.Vector3(0, 0, 1)
+          .applyQuaternion(truck.quaternion)
+          .setY(0)
+          .normalize();
 
-          truck.position.z +=
-            Math.cos(truck.rotation.y) * throttle * driveSpeed * delta;
+        if (throttle !== 0) {
+          truck.position.addScaledVector(
+            forwardDirection,
+            throttle * driveSpeed * delta,
+          );
         }
 
-        // Turn while moving.
+        // Turn only while moving. Reverse steering flips the turn direction.
         if (throttle !== 0 && steering !== 0) {
-          truck.rotation.y -=
-            steering * turnSpeed * delta * Math.sign(throttle);
+          const truckBody = truckBodyRef.current;
+          const yawChange = steering * turnSpeed * delta * Math.sign(throttle);
+
+          if (truckBody) {
+            // Keep the truck_body origin fixed while rotating the truck root.
+            truck.updateWorldMatrix(true, true);
+            const pivotWorldBefore = truckBody.getWorldPosition(
+              new THREE.Vector3(),
+            );
+
+            truck.rotation.y -= yawChange;
+            truck.updateWorldMatrix(true, true);
+
+            const pivotWorldAfter = truckBody.getWorldPosition(
+              new THREE.Vector3(),
+            );
+
+            const pivotBeforeInParent =
+              truck.parent.worldToLocal(pivotWorldBefore);
+            const pivotAfterInParent =
+              truck.parent.worldToLocal(pivotWorldAfter);
+
+            truck.position.add(pivotBeforeInParent.sub(pivotAfterInParent));
+          } else {
+            truck.rotation.y -= yawChange;
+          }
         }
 
         // Animate the wheels.
