@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
@@ -505,6 +506,33 @@ export default function ThreeScene({
       undefined,
       (error) => {
         console.error("Failed to load truck:", error);
+      },
+    );
+
+    // Load the low-poly world.
+    const worldLoader = new GLTFLoader();
+    const dracoLoader = new DRACOLoader();
+
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+    );
+
+    worldLoader.setDRACOLoader(dracoLoader);
+    worldLoader.load(
+      "/models/world/lowpoly_world.glb",
+      (gltf) => {
+        const world = gltf.scene;
+
+        world.name = "lowpoly_world";
+
+        // Add the world to the Three.js scene.
+        scene.add(world);
+
+        console.log("Low-poly world loaded:", world);
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading low-poly world:", error);
       },
     );
 
