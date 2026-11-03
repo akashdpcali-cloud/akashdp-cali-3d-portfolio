@@ -1,3 +1,5 @@
+import { exp } from "three/tsl";
+
 // CHATBOT CONTETN
 const portfolioData = {
   personal: {
@@ -111,3 +113,27 @@ export const Props = {
   knight: "knight",
   mcgregor: "shut your mouth mate",
 };
+
+export const BoardPopupData = [
+  {
+    name: "oldPortrolio",
+    title: "Old Me",
+    content:
+      "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
+    link: "https://amazon.com",
+  },
+  {
+    name: "resume",
+    title: "resume",
+    content:
+      "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
+    link: "https://amazon.com",
+  },
+  {
+    name: "mcgregor",
+    title: "Inspiration",
+    content:
+      "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
+    link: null,
+  },
+];

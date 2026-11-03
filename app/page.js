@@ -13,6 +13,7 @@ import AiChatSection from "./components/AiChatSection/AiChatSection";
 import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend";
 import RunButton from "./components/RunButton/RunButton";
 import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
+import BoardPopup from "./components/BoardPopup/BoardPopup";
 
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
@@ -76,6 +77,8 @@ export default function Home() {
           onToggle={() => setIsRunning((prev) => !prev)}
         />
       )}
+
+      <BoardPopup />
 
       {/* <LoadingPage /> */}
 
