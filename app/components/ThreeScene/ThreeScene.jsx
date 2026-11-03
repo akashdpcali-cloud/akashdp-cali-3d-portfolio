@@ -121,6 +121,12 @@ export default function ThreeScene({
   const computerObjectsRef = useRef([]);
   const computerOutlinesRef = useRef([]);
 
+  //animals jump
+
+  const animalObjectsRef = useRef([]);
+  const animalAnimationsRef = useRef([]);
+  const hoveredAnimalRef = useRef(null);
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -797,6 +803,67 @@ export default function ThreeScene({
               animalLabelsRef.current.push({ label, position: center });
             });
           }
+
+          // Find all sheep and cows
+          const animalNames = [
+            ...Array.from({ length: 11 }, (_, i) => `sheep${i + 1}`),
+            ...Array.from({ length: 11 }, (_, i) => `cow${i + 1}`),
+          ];
+
+          animalObjectsRef.current = animalNames
+            .map((name) => world.getObjectByName(name))
+            .filter(Boolean);
+
+          console.log(
+            "Animals found:",
+            animalObjectsRef.current.map((animal) => animal.name),
+          );
+
+          const handleAnimalClick = (event) => {
+            const rect = renderer.domElement.getBoundingClientRect();
+
+            const pointer = new THREE.Vector2(
+              ((event.clientX - rect.left) / rect.width) * 2 - 1,
+              -((event.clientY - rect.top) / rect.height) * 2 + 1,
+            );
+
+            const raycaster = new THREE.Raycaster();
+
+            raycaster.setFromCamera(pointer, camera);
+
+            const intersections = raycaster.intersectObjects(
+              animalObjectsRef.current,
+              true,
+            );
+
+            if (intersections.length === 0) return;
+
+            let animal = intersections[0].object;
+
+            while (animal && !animalObjectsRef.current.includes(animal)) {
+              animal = animal.parent;
+            }
+
+            if (!animal) return;
+
+            // Don't restart an existing animation
+            if (
+              animalAnimationsRef.current.some(
+                (animation) => animation.object === animal,
+              )
+            ) {
+              return;
+            }
+
+            animalAnimationsRef.current.push({
+              object: animal,
+              originalPosition: animal.position.clone(),
+              originalScale: animal.scale.clone(),
+              elapsed: 0,
+            });
+          };
+
+          renderer.domElement.addEventListener("click", handleAnimalClick);
 
           world.updateMatrixWorld(true);
 
@@ -1530,6 +1597,64 @@ export default function ThreeScene({
           outline.update();
         }
       });
+
+      const completedAnimations = [];
+
+      animalAnimationsRef.current.forEach((animation, index) => {
+        animation.elapsed += delta;
+
+        const squashDuration = 0.15;
+        const jumpDuration = 0.5;
+
+        const elapsed = animation.elapsed;
+
+        if (elapsed < squashDuration) {
+          // PHASE 1: Squash
+
+          const progress = elapsed / squashDuration;
+
+          const squash = 1 - 0.3 * progress;
+
+          animation.object.scale.set(
+            animation.originalScale.x,
+            animation.originalScale.y * squash,
+            animation.originalScale.z,
+          );
+
+          animation.object.position.y = animation.originalPosition.y;
+        } else {
+          // PHASE 2: Jump
+
+          const progress = Math.min(
+            (elapsed - squashDuration) / jumpDuration,
+            1,
+          );
+
+          // Smooth jump curve
+          const jumpHeight = Math.sin(progress * Math.PI) * 0.5;
+
+          // Restore original scale while jumping
+          animation.object.scale.copy(animation.originalScale);
+
+          // Move upward and return to original position
+          animation.object.position.y =
+            animation.originalPosition.y + jumpHeight;
+        }
+
+        // Animation finished
+        if (elapsed >= squashDuration + jumpDuration) {
+          animation.object.position.copy(animation.originalPosition);
+
+          animation.object.scale.copy(animation.originalScale);
+
+          completedAnimations.push(index);
+        }
+      });
+
+      // Remove completed animations
+      for (const index of completedAnimations.reverse()) {
+        animalAnimationsRef.current.splice(index, 1);
+      }
 
       composer.render();
     }
