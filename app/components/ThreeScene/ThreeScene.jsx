@@ -1024,14 +1024,38 @@ export default function ThreeScene({
             foundComputer || hoveredAnimalRef.current ? "pointer" : "default";
         };
 
-        const handleComputerClick = () => {
-          if (hoveredComputerRef.current) {
-            window.open(
-              "https://www.amazon.com",
-              "_blank",
-              "noopener,noreferrer",
-            );
+        const handleComputerClick = (event) => {
+          const rect = renderer.domElement.getBoundingClientRect();
+          computerPointerRef.current.set(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          computerRaycasterRef.current.setFromCamera(
+            computerPointerRef.current,
+            camera,
+          );
+
+          const intersections = computerRaycasterRef.current.intersectObjects(
+            computerObjectsRef.current,
+            true,
+          );
+
+          if (intersections.length === 0) return;
+
+          let computer = intersections[0].object;
+
+          while (computer && !computerObjectsRef.current.includes(computer)) {
+            computer = computer.parent;
           }
+
+          if (!computer) return;
+
+          window.open(
+            "https://akashdp-project-archive.vercel.app/",
+            "_blank",
+            "noopener,noreferrer",
+          );
         };
 
         renderer.domElement.addEventListener(
