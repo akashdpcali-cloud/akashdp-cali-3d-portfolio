@@ -974,10 +974,37 @@ export default function ThreeScene({
           .normalize();
 
         if (throttle !== 0) {
-          truck.position.addScaledVector(
-            forwardDirection,
-            throttle * driveSpeed * delta,
-          );
+          const movement = forwardDirection
+            .clone()
+            .multiplyScalar(throttle * driveSpeed * delta);
+
+          const truckBody = truckBodyRef.current;
+
+          const canMoveTruckBy = (offset) => {
+            if (!truckBody) {
+              return false;
+            }
+
+            truck.updateWorldMatrix(true, true);
+            truckBody.updateWorldMatrix(true, true);
+
+            const truckBounds = new THREE.Box3().setFromObject(truckBody);
+            const nextBounds = truckBounds.clone().translate(offset);
+
+            return !wallTrianglesRef.current.some((triangle) =>
+              nextBounds.intersectsTriangle(triangle),
+            );
+          };
+
+          const moveX = new THREE.Vector3(movement.x, 0, 0);
+          if (movement.x !== 0 && canMoveTruckBy(moveX)) {
+            truck.position.x += movement.x;
+          }
+
+          const moveZ = new THREE.Vector3(0, 0, movement.z);
+          if (movement.z !== 0 && canMoveTruckBy(moveZ)) {
+            truck.position.z += movement.z;
+          }
         }
 
         // Turn only while moving. Reverse steering flips the turn direction.
