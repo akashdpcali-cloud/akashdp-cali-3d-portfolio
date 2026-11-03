@@ -6,6 +6,8 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
+import { Props } from "@/app/data/portfolioData";
+
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
@@ -94,26 +96,16 @@ export default function ThreeScene({
   const wallsRef = useRef(null);
 
   const wallMeshesRef = useRef([]);
-  const wallCollisionBoxesRef = useRef([]);
+
   const wallTrianglesRef = useRef([]);
 
-  const checkWallCollision = (character) => {
-    if (!wallMeshesRef.current.length || !character) {
-      return false;
-    }
+  //props
 
-    const characterBox = new THREE.Box3().setFromObject(character);
+  const knightLabelRef = useRef(null);
+  const knightPositionRef = useRef(new THREE.Vector3());
 
-    for (const wall of wallMeshesRef.current) {
-      const wallBox = new THREE.Box3().setFromObject(wall);
-
-      if (characterBox.intersectsBox(wallBox)) {
-        return true;
-      }
-    }
-
-    return false;
-  };
+  const conorLabelRef = useRef(null);
+  const conorPositionRef = useRef(new THREE.Vector3());
 
   useEffect(() => {
     isRunningRef.current = isRunning;
@@ -501,7 +493,7 @@ export default function ThreeScene({
         context.font = "bold 42px Arial";
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillText("Click to Drive", 256, 64);
+        context.fillText(`${Props.truck}`, 256, 64);
 
         const texture = new THREE.CanvasTexture(canvas);
         const material = new THREE.SpriteMaterial({
@@ -552,6 +544,16 @@ export default function ThreeScene({
 
         world.name = "lowpoly_world";
 
+        console.log("World loaded");
+        console.log("walls object:", world.getObjectByName("walls"));
+        console.log("knight object:", world.getObjectByName("knight"));
+
+        world.traverse((object) => {
+          if (object.name.toLowerCase().includes("knight")) {
+            console.log("Knight-like object:", object.name, object.type);
+          }
+        });
+
         const walls = world.getObjectByName("walls");
 
         if (walls && walls.isMesh) {
@@ -565,6 +567,115 @@ export default function ThreeScene({
 
           // Update world transformation before extracting vertices.
           scene.add(world);
+
+          const knight = world.getObjectByName("knight");
+
+          if (knight) {
+            // Get the knight's world-space position and bounds
+            knight.updateWorldMatrix(true, true);
+
+            const knightBounds = new THREE.Box3().setFromObject(knight);
+            const knightCenter = new THREE.Vector3();
+
+            knightBounds.getCenter(knightCenter);
+
+            knightPositionRef.current.copy(knightCenter);
+
+            // Create canvas
+            const canvas = document.createElement("canvas");
+            canvas.width = 512;
+            canvas.height = 128;
+
+            const context = canvas.getContext("2d");
+
+            // Background
+            context.fillStyle = "rgba(15, 23, 42, 0.9)";
+            context.beginPath();
+            context.roundRect(10, 10, 492, 108, 24);
+            context.fill();
+
+            // Text
+            context.fillStyle = "#ffffff";
+            context.font = "bold 42px Arial";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText(`${Props.knight}`, 256, 64);
+
+            // Create texture
+            const texture = new THREE.CanvasTexture(canvas);
+
+            // Create sprite
+            const material = new THREE.SpriteMaterial({
+              map: texture,
+              transparent: true,
+              depthTest: false,
+            });
+
+            const label = new THREE.Sprite(material);
+
+            label.scale.set(4, 1, 1);
+
+            // Position above the knight
+            label.position.set(
+              knightCenter.x,
+              knightCenter.y + 2,
+              knightCenter.z,
+            );
+
+            label.visible = false;
+
+            scene.add(label);
+
+            knightLabelRef.current = label;
+
+            console.log("Knight label created.");
+          } else {
+            console.error('Could not find object named "knight".');
+          }
+
+          const conor = world.getObjectByName("conor");
+
+          if (conor) {
+            conor.updateWorldMatrix(true, true);
+
+            const conorBounds = new THREE.Box3().setFromObject(conor);
+            const conorCenter = conorBounds.getCenter(new THREE.Vector3());
+            conorPositionRef.current.copy(conorCenter);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = 512;
+            canvas.height = 128;
+
+            const context = canvas.getContext("2d");
+            context.fillStyle = "rgba(15, 23, 42, 0.9)";
+            context.beginPath();
+            context.roundRect(10, 10, 492, 108, 24);
+            context.fill();
+
+            context.fillStyle = "#ffffff";
+            context.font = "bold 42px Arial";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText(Props.mcgregor, 256, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({
+              map: texture,
+              transparent: true,
+              depthTest: false,
+            });
+
+            const label = new THREE.Sprite(material);
+            label.scale.set(4, 1, 1);
+            label.position.set(conorCenter.x, conorCenter.y + 2, conorCenter.z);
+            label.visible = false;
+
+            scene.add(label);
+            conorLabelRef.current = label;
+          } else {
+            console.error('Could not find object named "conor".');
+          }
+
           world.updateMatrixWorld(true);
 
           const vertexA = new THREE.Vector3();
@@ -935,7 +1046,45 @@ export default function ThreeScene({
             character.position.z = nextZ.z;
           }
         }
+        if (characterRef.current && knightLabelRef.current) {
+          const characterPosition = new THREE.Vector3();
 
+          characterRef.current.getWorldPosition(characterPosition);
+
+          const knightPosition = knightPositionRef.current;
+
+          // Calculate horizontal distance only (ignore height)
+          const distance = Math.hypot(
+            characterPosition.x - knightPosition.x,
+            characterPosition.z - knightPosition.z,
+          );
+          console.log("Knight label distance:", {
+            distance,
+            character: characterPosition.toArray(),
+            knight: knightPosition.toArray(),
+          });
+
+          knightLabelRef.current.visible = distance <= 5;
+          console.log(
+            "Label check:",
+            knightLabelRef.current.visible,
+            knightLabelRef.current.position.toArray(),
+          );
+        }
+
+        if (characterRef.current && conorLabelRef.current) {
+          const characterPosition = characterRef.current.getWorldPosition(
+            new THREE.Vector3(),
+          );
+          const conorPosition = conorPositionRef.current;
+
+          const distance = Math.hypot(
+            characterPosition.x - conorPosition.x,
+            characterPosition.z - conorPosition.z,
+          );
+
+          conorLabelRef.current.visible = distance <= 4;
+        }
         const actions = actionsRef.current;
 
         let nextAction = actions.idle;

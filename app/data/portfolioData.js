@@ -1,3 +1,4 @@
+// CHATBOT CONTETN
 const portfolioData = {
   personal: {
     name: "Akash D P",
@@ -39,6 +40,7 @@ const portfolioData = {
 
 export default portfolioData;
 
+// CHARACTERS
 export const characters = [
   {
     id: 1,
@@ -60,6 +62,7 @@ export const characters = [
   },
 ];
 
+//BGM
 export const portfolioBGM = [
   "/audio/bgm1.mp3",
   "/audio/bgm2.mp3",
@@ -67,9 +70,44 @@ export const portfolioBGM = [
   "/audio/bgm4.mp3",
 ];
 
+//INSTRUCTIONS
 export const instructionPopupData = [
   "Welcome to my interactive 3D portfolio, inspired by the visual world of Spider-Verse.",
   "Character Movement: keys(W A S D ) or the virtual joystick.",
   "360° View: Click + Drag on screen to look around",
   "Explore the world to discover my projects, skills, experience, and other work.",
 ];
+
+//PROPS
+
+export const Props = {
+  sheep: [
+    "React.js",
+    "Three.js",
+    "GSAP",
+    "Blender",
+    "Node.js",
+    "Express.js",
+    "PostgreSQL",
+    "Prisma ORM",
+    "Socket.io",
+    "Monorepo",
+    "Next.js",
+  ],
+  cow: [
+    "HTML",
+    "CSS",
+    "Js",
+    "SQLite",
+    "Vite",
+    "MUUUUU",
+    "MUUUUU",
+    "MUUUUU",
+    "MUUUUU",
+    "MUUUUU",
+    "MUUUUU",
+  ],
+  truck: "Click to Drive",
+  knight: "knight",
+  mcgregor: "conor mcgregor",
+};
