@@ -109,5 +109,5 @@ export const Props = {
   ],
   truck: "Click to Drive",
   knight: "knight",
-  mcgregor: "conor mcgregor",
+  mcgregor: "shut your mouth mate",
 };

@@ -192,6 +192,8 @@ export default function ThreeScene({
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87ceeb);
     sceneRef.current = scene;
+    knightLabelRef.current = null;
+    conorLabelRef.current = null;
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -399,12 +401,16 @@ export default function ThreeScene({
 
     const { ground } = InfiniteGround(scene);
 
+    let disposed = false;
+
     // Load the monster truck.
     const truckLoader = new GLTFLoader();
 
     truckLoader.load(
       "/models/truck/truck.glb",
       (gltf) => {
+        if (disposed || sceneRef.current !== scene) return;
+
         const truck = gltf.scene;
 
         truck.traverse((child) => {
@@ -540,6 +546,8 @@ export default function ThreeScene({
     worldLoader.load(
       "/models/world/lowpoly_world.glb",
       (gltf) => {
+        if (disposed || sceneRef.current !== scene) return;
+
         const world = gltf.scene;
 
         world.name = "lowpoly_world";
@@ -618,7 +626,7 @@ export default function ThreeScene({
             // Position above the knight
             label.position.set(
               knightCenter.x,
-              knightCenter.y + 2,
+              knightCenter.y + 3,
               knightCenter.z,
             );
 
@@ -751,8 +759,6 @@ export default function ThreeScene({
     loaderRef.current = loader;
 
     const clock = new THREE.Clock();
-
-    let disposed = false;
 
     function animate() {
       if (disposed) return;
@@ -1046,45 +1052,6 @@ export default function ThreeScene({
             character.position.z = nextZ.z;
           }
         }
-        if (characterRef.current && knightLabelRef.current) {
-          const characterPosition = new THREE.Vector3();
-
-          characterRef.current.getWorldPosition(characterPosition);
-
-          const knightPosition = knightPositionRef.current;
-
-          // Calculate horizontal distance only (ignore height)
-          const distance = Math.hypot(
-            characterPosition.x - knightPosition.x,
-            characterPosition.z - knightPosition.z,
-          );
-          console.log("Knight label distance:", {
-            distance,
-            character: characterPosition.toArray(),
-            knight: knightPosition.toArray(),
-          });
-
-          knightLabelRef.current.visible = distance <= 5;
-          console.log(
-            "Label check:",
-            knightLabelRef.current.visible,
-            knightLabelRef.current.position.toArray(),
-          );
-        }
-
-        if (characterRef.current && conorLabelRef.current) {
-          const characterPosition = characterRef.current.getWorldPosition(
-            new THREE.Vector3(),
-          );
-          const conorPosition = conorPositionRef.current;
-
-          const distance = Math.hypot(
-            characterPosition.x - conorPosition.x,
-            characterPosition.z - conorPosition.z,
-          );
-
-          conorLabelRef.current.visible = distance <= 4;
-        }
         const actions = actionsRef.current;
 
         let nextAction = actions.idle;
@@ -1239,6 +1206,43 @@ export default function ThreeScene({
         }
       }
 
+      const targetPosition = new THREE.Vector3();
+      if (isDrivingRef.current && truckBodyRef.current) {
+        truckBodyRef.current.updateWorldMatrix(true, true);
+        new THREE.Box3()
+          .setFromObject(truckBodyRef.current)
+          .getCenter(targetPosition);
+      } else if (character) {
+        character.getWorldPosition(targetPosition);
+      }
+
+      const hasProximityTarget = isDrivingRef.current
+        ? Boolean(truckBodyRef.current)
+        : Boolean(character);
+
+      if (hasProximityTarget) {
+        if (knightLabelRef.current) {
+          const knightPosition = knightPositionRef.current;
+          const distance = Math.hypot(
+            targetPosition.x - knightPosition.x,
+            targetPosition.z - knightPosition.z,
+          );
+          knightLabelRef.current.visible = distance <= 5;
+        }
+
+        if (conorLabelRef.current) {
+          const conorPosition = conorPositionRef.current;
+          const distance = Math.hypot(
+            targetPosition.x - conorPosition.x,
+            targetPosition.z - conorPosition.z,
+          );
+          conorLabelRef.current.visible = distance <= 4;
+        }
+      } else {
+        if (knightLabelRef.current) knightLabelRef.current.visible = false;
+        if (conorLabelRef.current) conorLabelRef.current.visible = false;
+      }
+
       // Camera follows the truck without rotating with the truck.
       if (isDrivingRef.current && truckBodyRef.current) {
         const orbit = truckCameraOrbitRef.current;
@@ -1364,6 +1368,8 @@ export default function ThreeScene({
       disposed = true;
 
       cancelAnimationFrame(requestRef.current);
+      knightLabelRef.current = null;
+      conorLabelRef.current = null;
       window.removeEventListener("resize", handleResize);
 
       window.removeEventListener("keydown", handleKeyDown);
