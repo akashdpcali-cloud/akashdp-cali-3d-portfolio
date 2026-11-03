@@ -14,7 +14,6 @@ import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend"
 import RunButton from "./components/RunButton/RunButton";
 import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
 import BoardPopup from "./components/BoardPopup/BoardPopup";
-
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
 import LoadingPage from "./components/LoadingPage/LoadingPage";
@@ -28,6 +27,8 @@ export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
   const [isDriving, setIsDriving] = useState(false);
 
+  const [selectedBoard, setSelectedBoard] = useState(null);
+
   return (
     <main>
       <ThreeScene
@@ -39,6 +40,7 @@ export default function Home() {
           setIsDriving(false);
           setIsRunning(false);
         }}
+        onBoardClick={setSelectedBoard}
       />
 
       <InstructionPopup />
@@ -78,7 +80,15 @@ export default function Home() {
         />
       )}
 
-      <BoardPopup />
+      <BoardPopup
+        data={selectedBoard}
+        onClose={() => setSelectedBoard(null)}
+        onOpen={() => {
+          if (selectedBoard?.link) {
+            window.open(selectedBoard.link, "_blank", "noopener,noreferrer");
+          }
+        }}
+      />
 
       {/* <LoadingPage /> */}
 

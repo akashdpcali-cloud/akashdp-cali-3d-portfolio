@@ -116,21 +116,21 @@ export const Props = {
 
 export const BoardPopupData = [
   {
-    name: "oldPortrolio",
+    board: "old_board",
     title: "Old Me",
     content:
       "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
     link: "https://amazon.com",
   },
   {
-    name: "resume",
+    board: "me_board",
     title: "resume",
     content:
       "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
     link: "https://amazon.com",
   },
   {
-    name: "mcgregor",
+    board: "conor_board",
     title: "Inspiration",
     content:
       "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",

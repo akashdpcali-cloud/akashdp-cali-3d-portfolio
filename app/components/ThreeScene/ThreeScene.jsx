@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -13,6 +13,8 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 import { Props } from "@/app/data/portfolioData";
 
+import { BoardPopupData } from "@/app/data/portfolioData";
+
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
@@ -21,6 +23,7 @@ export default function ThreeScene({
   isRunning,
   onEnterTruck,
   onExitTruck,
+  onBoardClick,
 }) {
   //Charecter
   const mountRef = useRef(null);
@@ -126,6 +129,11 @@ export default function ThreeScene({
   const animalObjectsRef = useRef([]);
   const animalAnimationsRef = useRef([]);
   const hoveredAnimalRef = useRef(null);
+
+  //board popup
+
+  const boardObjectsRef = useRef([]);
+  const hoveredBoardRef = useRef(null);
 
   useEffect(() => {
     isRunningRef.current = isRunning;
@@ -846,7 +854,9 @@ export default function ThreeScene({
             hoveredAnimalRef.current = hoveredAnimal;
 
             renderer.domElement.style.cursor =
-              hoveredAnimal || hoveredComputerRef.current
+              hoveredAnimal ||
+              hoveredComputerRef.current ||
+              hoveredBoardRef.current
                 ? "pointer"
                 : "default";
           };
@@ -1021,7 +1031,9 @@ export default function ThreeScene({
           }
 
           renderer.domElement.style.cursor =
-            foundComputer || hoveredAnimalRef.current ? "pointer" : "default";
+            foundComputer || hoveredAnimalRef.current || hoveredBoardRef.current
+              ? "pointer"
+              : "default";
         };
 
         const handleComputerClick = (event) => {
@@ -1085,6 +1097,98 @@ export default function ThreeScene({
         if (!world.parent) {
           scene.add(world);
         }
+
+        // Find all three boards
+        const boardNames = ["old_board", "me_board", "conor_board"];
+
+        boardObjectsRef.current = boardNames
+          .map((name) => world.getObjectByName(name))
+          .filter(Boolean);
+
+        console.log(
+          "Boards found:",
+          boardObjectsRef.current.map((board) => board.name),
+        );
+
+        const handleBoardClick = (event) => {
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObjects(
+            boardObjectsRef.current,
+            true,
+          );
+
+          if (intersections.length === 0) return;
+
+          // Find the actual board object
+          let clickedBoard = intersections[0].object;
+
+          while (
+            clickedBoard &&
+            !boardObjectsRef.current.includes(clickedBoard)
+          ) {
+            clickedBoard = clickedBoard.parent;
+          }
+
+          if (!clickedBoard) return;
+
+          // Find the matching board data
+          const boardData = BoardPopupData.find(
+            (item) => item.board === clickedBoard.name,
+          );
+
+          if (!boardData) {
+            console.warn("No popup data found for:", clickedBoard.name);
+            return;
+          }
+
+          // Display the corresponding popup
+          onBoardClick?.(boardData);
+        };
+
+        renderer.domElement.addEventListener("click", handleBoardClick);
+
+        const handleBoardPointerMove = (event) => {
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObjects(
+            boardObjectsRef.current,
+            true,
+          );
+
+          hoveredBoardRef.current =
+            intersections.length > 0 ? intersections[0].object : null;
+
+          renderer.domElement.style.cursor =
+            hoveredBoardRef.current ||
+            hoveredComputerRef.current ||
+            hoveredAnimalRef.current
+              ? "pointer"
+              : "default";
+        };
+
+        renderer.domElement.addEventListener(
+          "pointermove",
+          handleBoardPointerMove,
+        );
 
         console.log("Low-poly world loaded:", world);
       },
