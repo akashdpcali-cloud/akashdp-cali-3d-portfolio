@@ -1631,7 +1631,7 @@ export default function ThreeScene({
           );
 
           // Smooth jump curve
-          const jumpHeight = Math.sin(progress * Math.PI) * 0.5;
+          const jumpHeight = Math.sin(progress * Math.PI);
 
           // Restore original scale while jumping
           animation.object.scale.copy(animation.originalScale);
