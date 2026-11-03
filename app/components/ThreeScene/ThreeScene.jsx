@@ -6,6 +6,11 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+
 import { Props } from "@/app/data/portfolioData";
 
 import InfiniteGround from "./InfiniteGround";
@@ -109,6 +114,13 @@ export default function ThreeScene({
 
   const animalLabelsRef = useRef([]);
 
+  //computers
+  const computerRaycasterRef = useRef(new THREE.Raycaster());
+  const computerPointerRef = useRef(new THREE.Vector2());
+  const hoveredComputerRef = useRef(null);
+  const computerObjectsRef = useRef([]);
+  const computerOutlinesRef = useRef([]);
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -209,13 +221,60 @@ export default function ThreeScene({
 
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+    });
+
+    const width = mount.clientWidth;
+    const height = mount.clientHeight;
+
+    const pixelRatio = Math.min(window.devicePixelRatio, 2);
+
+    renderer.setPixelRatio(pixelRatio);
+    renderer.setSize(width, height);
+
+    renderer.shadowMap.enabled = true;
+
+    // Canvas
+    const canvas = renderer.domElement;
+
+    // Effect Composer
+    const composer = new EffectComposer(renderer);
+
+    composer.setPixelRatio(pixelRatio);
+    composer.setSize(width, height);
+
+    // Render Pass
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    // Outline Pass
+    const outlinePass = new OutlinePass(
+      new THREE.Vector2(width, height),
+      scene,
+      camera,
+    );
+
+    outlinePass.downSampleRatio = 1;
+
+    outlinePass.edgeStrength = 5;
+    outlinePass.edgeGlow = 1;
+    outlinePass.edgeThickness = 2;
+    outlinePass.pulsePeriod = 0;
+
+    outlinePass.visibleEdgeColor.set("#ffff00");
+    outlinePass.hiddenEdgeColor.set("#ffff00");
+
+    composer.addPass(outlinePass);
+
+    // Output Pass
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
 
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-
-    const canvas = renderer.domElement;
 
     canvas.style.touchAction = "none";
 
@@ -798,6 +857,99 @@ export default function ThreeScene({
           console.error('Could not find a mesh named "walls".');
         }
 
+        const handleComputerPointerMove = (event) => {
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          computerPointerRef.current.x =
+            ((event.clientX - rect.left) / rect.width) * 2 - 1;
+
+          computerPointerRef.current.y =
+            -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+          computerRaycasterRef.current.setFromCamera(
+            computerPointerRef.current,
+            camera,
+          );
+
+          const intersections = computerRaycasterRef.current.intersectObjects(
+            computerObjectsRef.current,
+            true,
+          );
+
+          let foundComputer = null;
+
+          if (intersections.length > 0) {
+            let object = intersections[0].object;
+
+            while (object && !computerObjectsRef.current.includes(object)) {
+              object = object.parent;
+            }
+
+            foundComputer = object;
+          }
+
+          // Restore the previously hovered computer
+          if (hoveredComputerRef.current !== foundComputer) {
+            if (hoveredComputerRef.current) {
+              const previous = hoveredComputerRef.current;
+
+              previous.scale.copy(previous.userData.originalScale);
+            }
+
+            hoveredComputerRef.current = foundComputer;
+
+            // Highlight the newly hovered computer
+            if (foundComputer) {
+              foundComputer.scale
+                .copy(foundComputer.userData.originalScale)
+                .multiplyScalar(1.5);
+
+              outlinePass.selectedObjects = [foundComputer];
+            }
+            if (!foundComputer) {
+              outlinePass.selectedObjects = [];
+            }
+          }
+
+          renderer.domElement.style.cursor = foundComputer
+            ? "pointer"
+            : "default";
+        };
+
+        const handleComputerClick = () => {
+          if (hoveredComputerRef.current) {
+            window.open(
+              "https://www.amazon.com",
+              "_blank",
+              "noopener,noreferrer",
+            );
+          }
+        };
+
+        renderer.domElement.addEventListener(
+          "pointermove",
+          handleComputerPointerMove,
+        );
+
+        renderer.domElement.addEventListener("click", handleComputerClick);
+
+        // Find the three computers
+        const computerNames = ["computer1", "computer2", "computer3"];
+
+        computerObjectsRef.current = computerNames
+          .map((name) => world.getObjectByName(name))
+          .filter(Boolean);
+
+        // Store original scales and create outlines
+        computerObjectsRef.current.forEach((computer) => {
+          computer.userData.originalScale = computer.scale.clone();
+        });
+
+        console.log(
+          "Interactive computers found:",
+          computerObjectsRef.current.map((computer) => computer.name),
+        );
+
         if (!world.parent) {
           scene.add(world);
         }
@@ -1373,7 +1525,13 @@ export default function ThreeScene({
         mixerRef.current.update(delta);
       }
 
-      renderer.render(scene, camera);
+      computerOutlinesRef.current.forEach((outline) => {
+        if (outline.visible) {
+          outline.update();
+        }
+      });
+
+      composer.render();
     }
     animate();
 
@@ -1383,9 +1541,16 @@ export default function ThreeScene({
 
       if (!width || !height) return;
 
+      const pixelRatio = Math.min(window.devicePixelRatio, 2);
+
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+
+      renderer.setPixelRatio(pixelRatio);
       renderer.setSize(width, height);
+
+      composer.setPixelRatio(pixelRatio);
+      composer.setSize(width, height);
     }
 
     window.addEventListener("resize", handleResize);
