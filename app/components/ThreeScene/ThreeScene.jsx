@@ -89,6 +89,32 @@ export default function ThreeScene({
   const truckFrontLeftOriginalRotationRef = useRef(new THREE.Euler());
   const truckFrontRightOriginalRotationRef = useRef(new THREE.Euler());
 
+  //collision walls
+
+  const wallsRef = useRef(null);
+
+  const wallMeshesRef = useRef([]);
+  const wallCollisionBoxesRef = useRef([]);
+  const wallTrianglesRef = useRef([]);
+
+  const checkWallCollision = (character) => {
+    if (!wallMeshesRef.current.length || !character) {
+      return false;
+    }
+
+    const characterBox = new THREE.Box3().setFromObject(character);
+
+    for (const wall of wallMeshesRef.current) {
+      const wallBox = new THREE.Box3().setFromObject(wall);
+
+      if (characterBox.intersectsBox(wallBox)) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -526,8 +552,80 @@ export default function ThreeScene({
 
         world.name = "lowpoly_world";
 
-        // Add the world to the Three.js scene.
-        scene.add(world);
+        const walls = world.getObjectByName("walls");
+
+        if (walls && walls.isMesh) {
+          wallsRef.current = walls;
+
+          const geometry = walls.geometry;
+          const position = geometry.attributes.position;
+          const index = geometry.index;
+
+          const triangles = [];
+
+          // Update world transformation before extracting vertices.
+          scene.add(world);
+          world.updateMatrixWorld(true);
+
+          const vertexA = new THREE.Vector3();
+          const vertexB = new THREE.Vector3();
+          const vertexC = new THREE.Vector3();
+
+          const totalTriangles = index ? index.count / 3 : position.count / 3;
+
+          for (let i = 0; i < totalTriangles; i++) {
+            const a = index ? index.getX(i * 3) : i * 3;
+            const b = index ? index.getX(i * 3 + 1) : i * 3 + 1;
+            const c = index ? index.getX(i * 3 + 2) : i * 3 + 2;
+
+            vertexA.fromBufferAttribute(position, a);
+            vertexB.fromBufferAttribute(position, b);
+            vertexC.fromBufferAttribute(position, c);
+
+            // Convert local coordinates into world coordinates.
+            vertexA.applyMatrix4(walls.matrixWorld);
+            vertexB.applyMatrix4(walls.matrixWorld);
+            vertexC.applyMatrix4(walls.matrixWorld);
+
+            triangles.push(
+              new THREE.Triangle(
+                vertexA.clone(),
+                vertexB.clone(),
+                vertexC.clone(),
+              ),
+            );
+          }
+
+          wallTrianglesRef.current = triangles;
+
+          const wallBounds = new THREE.Box3().setFromObject(walls);
+
+          console.log("WALL BOUNDS:", {
+            min: wallBounds.min.toArray(),
+            max: wallBounds.max.toArray(),
+            size: wallBounds.getSize(new THREE.Vector3()).toArray(),
+          });
+
+          console.log(
+            "Walls world position:",
+            walls.getWorldPosition(new THREE.Vector3()),
+          );
+
+          console.log(
+            "Walls world bounds:",
+            new THREE.Box3().setFromObject(walls),
+          );
+
+          console.log("First wall triangle:", triangles[0]);
+
+          console.log("Wall collision triangles:", triangles.length);
+        } else {
+          console.error('Could not find a mesh named "walls".');
+        }
+
+        if (!world.parent) {
+          scene.add(world);
+        }
 
         console.log("Low-poly world loaded:", world);
       },
@@ -578,23 +676,23 @@ export default function ThreeScene({
         orbit.userAdjusted = false;
       }
 
-      console.log("Proximity check:", {
-        character: !!character,
-        truck: !!truck,
-        prompt: !!prompt,
-      });
+      // console.log("Proximity check:", {
+      //   character: !!character,
+      //   truck: !!truck,
+      //   prompt: !!prompt,
+      // });
 
       if (character && truck && prompt && !isDrivingRef.current) {
         const truckBody = truck.getObjectByName("truck_body");
         const box = new THREE.Box3().setFromObject(truckBody);
 
-        console.log("Truck body bounds:", {
-          min: box.min.toArray(),
-          max: box.max.toArray(),
-          center: box.getCenter(new THREE.Vector3()).toArray(),
-          size: box.getSize(new THREE.Vector3()).toArray(),
-        });
-        console.log("Truck body found:", !!truckBody);
+        // console.log("Truck body bounds:", {
+        //   min: box.min.toArray(),
+        //   max: box.max.toArray(),
+        //   center: box.getCenter(new THREE.Vector3()).toArray(),
+        //   size: box.getSize(new THREE.Vector3()).toArray(),
+        // });
+        // console.log("Truck body found:", !!truckBody);
 
         if (truckBody) {
           const characterPosition = new THREE.Vector3();
@@ -603,12 +701,8 @@ export default function ThreeScene({
           character.getWorldPosition(characterPosition);
           truckBody.getWorldPosition(truckBodyPosition);
 
-          console.log("Character world position:", characterPosition);
-          console.log("Truck body world position:", truckBodyPosition);
-          console.log(
-            "Distance to truck body:",
-            characterPosition.distanceTo(truckBodyPosition),
-          );
+          // console.log("Character world position:", characterPosition);
+          // console.log("Truck body world position:", truckBodyPosition);
 
           const bodyBox = new THREE.Box3().setFromObject(truckBody);
 
@@ -616,21 +710,21 @@ export default function ThreeScene({
           bodyBox.clampPoint(characterPosition, closestPoint);
 
           const distance = characterPosition.distanceTo(closestPoint);
-          console.log(
-            "Character X/Z:",
-            characterPosition.x,
-            characterPosition.z,
-          );
-          console.log(
-            "Truck body X/Z:",
-            truckBodyPosition.x,
-            truckBodyPosition.z,
-          );
-          console.log("Distance:", distance);
-          console.log("Distance to truck surface:", distance);
+          // console.log(
+          //   "Character X/Z:",
+          //   characterPosition.x,
+          //   characterPosition.z,
+          // );
+          // console.log(
+          //   "Truck body X/Z:",
+          //   truckBodyPosition.x,
+          //   truckBodyPosition.z,
+          // );
+          // console.log("Distance:", distance);
+          // console.log("Distance to truck surface:", distance);
 
           prompt.visible = distance <= 5;
-          console.log("Prompt visible after update:", prompt.visible);
+          // console.log("Prompt visible after update:", prompt.visible);
         }
       }
 
@@ -675,8 +769,8 @@ export default function ThreeScene({
           const inputX = moveX / movementLength;
           const inputZ = moveZ / movementLength;
 
-          console.log("Camera forward:", cameraForwardRef.current.toArray());
-          console.log("Camera right:", cameraRightRef.current.toArray());
+          // console.log("Camera forward:", cameraForwardRef.current.toArray());
+          // console.log("Camera right:", cameraRightRef.current.toArray());
 
           const cameraForward = new THREE.Vector3();
           camera.getWorldDirection(cameraForward);
@@ -697,7 +791,7 @@ export default function ThreeScene({
             -inputZ, // W = -Z, S = +Z
           ).normalize();
 
-          console.log("Movement direction:", movementDirection.toArray());
+          // console.log("Movement direction:", movementDirection.toArray());
 
           // Rotate the character toward its movement direction
           const targetRotation = Math.atan2(
@@ -752,23 +846,29 @@ export default function ThreeScene({
             ),
           );
 
+          console.log("CHARACTER BOX MIN:", collisionBox.min.toArray());
+          console.log("CHARACTER BOX MAX:", collisionBox.max.toArray());
+          console.log("CHARACTER POSITION:", character.position.toArray());
+
+          console.log("CHARACTER COLLISION BOX:", {
+            min: collisionBox.min.toArray(),
+            max: collisionBox.max.toArray(),
+          });
+
           // Test whether the character can move to a proposed position.
           const canMoveTo = (testPosition) => {
             const offset = testPosition.clone().sub(character.position);
             const testBox = collisionBox.clone().translate(offset);
 
+            // CHECK TRUCK COLLISIONS
             for (const part of truckCollisionObjects) {
               part.updateWorldMatrix(true, true);
 
               const truckBox = new THREE.Box3().setFromObject(part);
 
-              // 1. FIND THE CENTER OF THE TRUCK BOX
               const truckCenter = new THREE.Vector3();
               truckBox.getCenter(truckCenter);
 
-              // 2. REDUCE THE X-AXIS RANGE (WIDTH)
-              // 0.7 means it shrinks the hitbox to 70% of its original side-to-side width.
-              // Lower this number (e.g., 0.5) to make the hitbox even narrower.
               const xScaleFactor = 0.7;
               const halfX =
                 (truckBox.max.x - truckBox.min.x) * 0.5 * xScaleFactor;
@@ -776,7 +876,6 @@ export default function ThreeScene({
               truckBox.min.x = truckCenter.x - halfX;
               truckBox.max.x = truckCenter.x + halfX;
 
-              // 3. REDUCE THE Z-AXIS RANGE (DEPTH)
               const zScaleFactor = 0.7;
               const halfZ =
                 (truckBox.max.z - truckBox.min.z) * 0.5 * zScaleFactor;
@@ -784,19 +883,34 @@ export default function ThreeScene({
               truckBox.min.z = truckCenter.z - halfZ;
               truckBox.max.z = truckCenter.z + halfZ;
 
-              // 4. SHIFT THE BOX FORWARD OR BACKWARD ALONG Z (Your alignment fix)
               const zOffset = 0.6;
+
               truckBox.min.z += zOffset;
               truckBox.max.z += zOffset;
-
-              // OPTIONAL: Add an xOffset here if the side hitboxes are misaligned left/right
-              // const xOffset = 0.0;
-              // truckBox.min.x += xOffset;
-              // truckBox.max.x += xOffset;
 
               if (testBox.intersectsBox(truckBox)) {
                 return false;
               }
+            }
+
+            // CHECK WALL COLLISIONS
+            let hitCount = 0;
+
+            for (const triangle of wallTrianglesRef.current) {
+              if (testBox.intersectsTriangle(triangle)) {
+                hitCount++;
+              }
+            }
+
+            if (hitCount > 0) {
+              console.log("WALL COLLISION DETECTED:", {
+                hitCount,
+                position: testPosition.toArray(),
+                boxMin: testBox.min.toArray(),
+                boxMax: testBox.max.toArray(),
+              });
+
+              return false;
             }
 
             return true;
