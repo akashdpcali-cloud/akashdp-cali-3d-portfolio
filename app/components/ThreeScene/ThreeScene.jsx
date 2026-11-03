@@ -597,6 +597,7 @@ export default function ThreeScene({
           }
 
           wallTrianglesRef.current = triangles;
+          walls.visible = false;
 
           const wallBounds = new THREE.Box3().setFromObject(walls);
 
@@ -992,7 +993,7 @@ export default function ThreeScene({
             const center = truckBounds.getCenter(new THREE.Vector3());
             const size = truckBounds.getSize(new THREE.Vector3());
 
-            size.x *= 0.9; // reduce width by 10%
+            size.x *= 0.7; // reduce width by 10%
             size.z *= 0.9; // reduce length by 10%
 
             truckBounds.setFromCenterAndSize(center, size);
