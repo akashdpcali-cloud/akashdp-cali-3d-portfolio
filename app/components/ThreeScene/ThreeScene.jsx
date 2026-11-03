@@ -814,6 +814,48 @@ export default function ThreeScene({
             .map((name) => world.getObjectByName(name))
             .filter(Boolean);
 
+          const handleAnimalPointerMove = (event) => {
+            const rect = renderer.domElement.getBoundingClientRect();
+
+            const pointer = new THREE.Vector2(
+              ((event.clientX - rect.left) / rect.width) * 2 - 1,
+              -((event.clientY - rect.top) / rect.height) * 2 + 1,
+            );
+
+            const raycaster = new THREE.Raycaster();
+
+            raycaster.setFromCamera(pointer, camera);
+
+            const intersections = raycaster.intersectObjects(
+              animalObjectsRef.current,
+              true,
+            );
+
+            let hoveredAnimal = null;
+
+            if (intersections.length > 0) {
+              let object = intersections[0].object;
+
+              while (object && !animalObjectsRef.current.includes(object)) {
+                object = object.parent;
+              }
+
+              hoveredAnimal = object;
+            }
+
+            hoveredAnimalRef.current = hoveredAnimal;
+
+            renderer.domElement.style.cursor =
+              hoveredAnimal || hoveredComputerRef.current
+                ? "pointer"
+                : "default";
+          };
+
+          renderer.domElement.addEventListener(
+            "pointermove",
+            handleAnimalPointerMove,
+          );
+
           console.log(
             "Animals found:",
             animalObjectsRef.current.map((animal) => animal.name),
@@ -978,9 +1020,8 @@ export default function ThreeScene({
             }
           }
 
-          renderer.domElement.style.cursor = foundComputer
-            ? "pointer"
-            : "default";
+          renderer.domElement.style.cursor =
+            foundComputer || hoveredAnimalRef.current ? "pointer" : "default";
         };
 
         const handleComputerClick = () => {
