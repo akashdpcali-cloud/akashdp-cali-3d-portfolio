@@ -989,6 +989,13 @@ export default function ThreeScene({
             truckBody.updateWorldMatrix(true, true);
 
             const truckBounds = new THREE.Box3().setFromObject(truckBody);
+            const center = truckBounds.getCenter(new THREE.Vector3());
+            const size = truckBounds.getSize(new THREE.Vector3());
+
+            size.x *= 0.9; // reduce width by 10%
+            size.z *= 0.9; // reduce length by 10%
+
+            truckBounds.setFromCenterAndSize(center, size);
             const nextBounds = truckBounds.clone().translate(offset);
 
             return !wallTrianglesRef.current.some((triangle) =>
