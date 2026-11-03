@@ -107,6 +107,8 @@ export default function ThreeScene({
   const conorLabelRef = useRef(null);
   const conorPositionRef = useRef(new THREE.Vector3());
 
+  const animalLabelsRef = useRef([]);
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -684,6 +686,59 @@ export default function ThreeScene({
             console.error('Could not find object named "conor".');
           }
 
+          animalLabelsRef.current = [];
+
+          for (const [animalType, props] of Object.entries({
+            sheep: Props.sheep,
+            cow: Props.cow,
+          })) {
+            props.forEach((text, index) => {
+              const animalName = `${animalType}${index + 1}`;
+              const animal = world.getObjectByName(animalName);
+
+              if (!animal) {
+                console.error(`Could not find object named "${animalName}".`);
+                return;
+              }
+
+              animal.updateWorldMatrix(true, true);
+
+              const bounds = new THREE.Box3().setFromObject(animal);
+              const center = bounds.getCenter(new THREE.Vector3());
+
+              const canvas = document.createElement("canvas");
+              canvas.width = 512;
+              canvas.height = 128;
+
+              const context = canvas.getContext("2d");
+              context.fillStyle = "rgba(15, 23, 42, 0.9)";
+              context.beginPath();
+              context.roundRect(10, 10, 492, 108, 24);
+              context.fill();
+
+              context.fillStyle = "#ffffff";
+              context.font = "bold 42px Arial";
+              context.textAlign = "center";
+              context.textBaseline = "middle";
+              context.fillText(text, 256, 64);
+
+              const texture = new THREE.CanvasTexture(canvas);
+              const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthTest: false,
+              });
+
+              const label = new THREE.Sprite(material);
+              label.scale.set(4, 1, 1);
+              label.position.set(center.x, center.y + 1.5, center.z);
+              label.visible = false;
+
+              scene.add(label);
+              animalLabelsRef.current.push({ label, position: center });
+            });
+          }
+
           world.updateMatrixWorld(true);
 
           const vertexA = new THREE.Vector3();
@@ -1238,9 +1293,20 @@ export default function ThreeScene({
           );
           conorLabelRef.current.visible = distance <= 4;
         }
+        for (const { label, position } of animalLabelsRef.current) {
+          const distance = Math.hypot(
+            targetPosition.x - position.x,
+            targetPosition.z - position.z,
+          );
+
+          label.visible = distance <= 5;
+        }
       } else {
         if (knightLabelRef.current) knightLabelRef.current.visible = false;
         if (conorLabelRef.current) conorLabelRef.current.visible = false;
+        for (const { label } of animalLabelsRef.current) {
+          label.visible = false;
+        }
       }
 
       // Camera follows the truck without rotating with the truck.
