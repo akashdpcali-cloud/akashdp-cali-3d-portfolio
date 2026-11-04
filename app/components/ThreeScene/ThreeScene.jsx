@@ -135,6 +135,11 @@ export default function ThreeScene({
   const boardObjectsRef = useRef([]);
   const hoveredBoardRef = useRef(null);
 
+  //feedback popup
+
+  const postBoxRef = useRef(null);
+  const hoveredPostBoxRef = useRef(null);
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -1022,16 +1027,20 @@ export default function ThreeScene({
               foundComputer.scale
                 .copy(foundComputer.userData.originalScale)
                 .multiplyScalar(1.5);
+            }
 
-              outlinePass.selectedObjects = [foundComputer];
-            }
-            if (!foundComputer) {
-              outlinePass.selectedObjects = [];
-            }
+            // Keep both computer and post_box outlines
+            outlinePass.selectedObjects = [
+              ...(foundComputer ? [foundComputer] : []),
+              ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+            ];
           }
 
           renderer.domElement.style.cursor =
-            foundComputer || hoveredAnimalRef.current || hoveredBoardRef.current
+            foundComputer ||
+            hoveredPostBoxRef.current ||
+            hoveredAnimalRef.current ||
+            hoveredBoardRef.current
               ? "pointer"
               : "default";
         };
@@ -1097,6 +1106,74 @@ export default function ThreeScene({
         if (!world.parent) {
           scene.add(world);
         }
+
+        postBoxRef.current = world.getObjectByName("post_box");
+
+        if (postBoxRef.current) {
+          postBoxRef.current.userData.originalScale =
+            postBoxRef.current.scale.clone();
+
+          console.log("Post box found:", postBoxRef.current);
+        } else {
+          console.warn("post_box not found in the world");
+        }
+
+        const handlePostBoxPointerMove = (event) => {
+          if (!postBoxRef.current) return;
+
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObject(
+            postBoxRef.current,
+            true,
+          );
+
+          const isHovering = intersections.length > 0;
+
+          hoveredPostBoxRef.current = isHovering ? postBoxRef.current : null;
+
+          // Scale animation
+          if (isHovering) {
+            postBoxRef.current.scale.set(
+              postBoxRef.current.userData.originalScale.x * 1.12,
+              postBoxRef.current.userData.originalScale.y * 1.12,
+              postBoxRef.current.userData.originalScale.z * 1.12,
+            );
+          } else {
+            postBoxRef.current.scale.copy(
+              postBoxRef.current.userData.originalScale,
+            );
+          }
+
+          // Yellow outline
+          outlinePass.selectedObjects = [
+            ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
+            ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+          ];
+
+          // Cursor
+          renderer.domElement.style.cursor =
+            hoveredPostBoxRef.current ||
+            hoveredComputerRef.current ||
+            hoveredAnimalRef.current ||
+            hoveredBoardRef.current
+              ? "pointer"
+              : "default";
+        };
+
+        renderer.domElement.addEventListener(
+          "pointermove",
+          handlePostBoxPointerMove,
+        );
 
         // Find all three boards
         const boardNames = ["old_board", "me_board", "conor_board"];
@@ -1179,6 +1256,7 @@ export default function ThreeScene({
 
           renderer.domElement.style.cursor =
             hoveredBoardRef.current ||
+            hoveredPostBoxRef.current ||
             hoveredComputerRef.current ||
             hoveredAnimalRef.current
               ? "pointer"

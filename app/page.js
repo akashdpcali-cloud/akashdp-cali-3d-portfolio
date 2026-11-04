@@ -14,6 +14,7 @@ import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend"
 import RunButton from "./components/RunButton/RunButton";
 import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
 import BoardPopup from "./components/BoardPopup/BoardPopup";
+import FeedbackPopup from "./components/FeedbackPopup/FeedbackPopup";
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
 import LoadingPage from "./components/LoadingPage/LoadingPage";
@@ -89,6 +90,8 @@ export default function Home() {
           }
         }}
       />
+
+      {/* <FeedbackPopup /> */}
 
       {/* <LoadingPage /> */}
 
