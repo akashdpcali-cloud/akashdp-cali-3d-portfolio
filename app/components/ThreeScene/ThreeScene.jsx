@@ -896,7 +896,8 @@ export default function ThreeScene({
             renderer.domElement.style.cursor =
               hoveredAnimal ||
               hoveredComputerRef.current ||
-              hoveredBoardRef.current
+              hoveredBoardRef.current ||
+              hoveredUfcBeltRef.current
                 ? "pointer"
                 : "default";
           };
@@ -1068,6 +1069,7 @@ export default function ThreeScene({
             outlinePass.selectedObjects = [
               ...(foundComputer ? [foundComputer] : []),
               ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+              ...(hoveredUfcBeltRef.current ? [hoveredUfcBeltRef.current] : []),
             ];
           }
 
@@ -1075,7 +1077,8 @@ export default function ThreeScene({
             foundComputer ||
             hoveredPostBoxRef.current ||
             hoveredAnimalRef.current ||
-            hoveredBoardRef.current
+            hoveredBoardRef.current ||
+            hoveredUfcBeltRef.current
               ? "pointer"
               : "default";
         };
@@ -1193,6 +1196,7 @@ export default function ThreeScene({
           outlinePass.selectedObjects = [
             ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
             ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+            ...(hoveredUfcBeltRef.current ? [hoveredUfcBeltRef.current] : []),
           ];
 
           // Cursor
@@ -1200,7 +1204,8 @@ export default function ThreeScene({
             hoveredPostBoxRef.current ||
             hoveredComputerRef.current ||
             hoveredAnimalRef.current ||
-            hoveredBoardRef.current
+            hoveredBoardRef.current ||
+            hoveredUfcBeltRef.current
               ? "pointer"
               : "default";
         };
@@ -1272,7 +1277,7 @@ export default function ThreeScene({
           if (isHovering) {
             ufcBeltRef.current.scale
               .copy(ufcBeltRef.current.userData.originalScale)
-              .multiplyScalar(1.15);
+              .multiplyScalar(1.5);
           } else {
             ufcBeltRef.current.scale.copy(
               ufcBeltRef.current.userData.originalScale,
@@ -1400,6 +1405,7 @@ export default function ThreeScene({
             ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
             ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
             ...(hoveredBoardRef.current ? [hoveredBoardRef.current] : []),
+            ...(hoveredUfcBeltRef.current ? [hoveredUfcBeltRef.current] : []),
             ...(truckIntersections.length > 0 && truckRef.current
               ? [truckRef.current]
               : []),
@@ -1410,7 +1416,8 @@ export default function ThreeScene({
             hoveredPostBoxRef.current ||
             hoveredComputerRef.current ||
             hoveredAnimalRef.current ||
-            truckIntersections.length > 0
+            truckIntersections.length > 0 ||
+            hoveredUfcBeltRef.current
               ? "pointer"
               : "default";
         };
