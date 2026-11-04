@@ -24,6 +24,7 @@ export default function ThreeScene({
   onEnterTruck,
   onExitTruck,
   onBoardClick,
+  onPostBoxClick,
 }) {
   //Charecter
   const mountRef = useRef(null);
@@ -1175,6 +1176,30 @@ export default function ThreeScene({
           handlePostBoxPointerMove,
         );
 
+        const handlePostBoxClick = (event) => {
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObject(
+            postBoxRef.current,
+            true,
+          );
+
+          if (intersections.length > 0) {
+            onPostBoxClick?.();
+          }
+        };
+
+        renderer.domElement.addEventListener("click", handlePostBoxClick);
+
         // Find all three boards
         const boardNames = ["old_board", "me_board", "conor_board"];
 
@@ -1251,6 +1276,10 @@ export default function ThreeScene({
             true,
           );
 
+          const truckIntersections = truckRef.current
+            ? raycaster.intersectObject(truckRef.current, true)
+            : [];
+
           let hoveredBoard =
             intersections.length > 0 ? intersections[0].object : null;
 
@@ -1267,13 +1296,17 @@ export default function ThreeScene({
             ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
             ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
             ...(hoveredBoardRef.current ? [hoveredBoardRef.current] : []),
+            ...(truckIntersections.length > 0 && truckRef.current
+              ? [truckRef.current]
+              : []),
           ];
 
           renderer.domElement.style.cursor =
             hoveredBoardRef.current ||
             hoveredPostBoxRef.current ||
             hoveredComputerRef.current ||
-            hoveredAnimalRef.current
+            hoveredAnimalRef.current ||
+            truckIntersections.length > 0
               ? "pointer"
               : "default";
         };

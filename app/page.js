@@ -29,6 +29,7 @@ export default function Home() {
   const [isDriving, setIsDriving] = useState(false);
 
   const [selectedBoard, setSelectedBoard] = useState(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   return (
     <main>
@@ -42,6 +43,7 @@ export default function Home() {
           setIsRunning(false);
         }}
         onBoardClick={setSelectedBoard}
+        onPostBoxClick={() => setIsFeedbackOpen(true)}
       />
 
       <InstructionPopup />
@@ -91,7 +93,10 @@ export default function Home() {
         }}
       />
 
-      {/* <FeedbackPopup /> */}
+      <FeedbackPopup
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
 
       {/* <LoadingPage /> */}
 
