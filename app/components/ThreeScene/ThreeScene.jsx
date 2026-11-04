@@ -1251,8 +1251,23 @@ export default function ThreeScene({
             true,
           );
 
-          hoveredBoardRef.current =
+          let hoveredBoard =
             intersections.length > 0 ? intersections[0].object : null;
+
+          while (
+            hoveredBoard &&
+            !boardObjectsRef.current.includes(hoveredBoard)
+          ) {
+            hoveredBoard = hoveredBoard.parent;
+          }
+
+          hoveredBoardRef.current = hoveredBoard;
+
+          outlinePass.selectedObjects = [
+            ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
+            ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+            ...(hoveredBoardRef.current ? [hoveredBoardRef.current] : []),
+          ];
 
           renderer.domElement.style.cursor =
             hoveredBoardRef.current ||
