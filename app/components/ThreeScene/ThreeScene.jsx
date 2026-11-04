@@ -218,10 +218,10 @@ export default function ThreeScene({
 
       if (!["w", "a", "s", "d"].includes(key)) return;
 
-      console.log("Key pressed:", key.toUpperCase(), {
-        cameraForward: cameraForwardRef.current.toArray(),
-        cameraRight: cameraRightRef.current.toArray(),
-      });
+      // console.log("Key pressed:", key.toUpperCase(), {
+      //   cameraForward: cameraForwardRef.current.toArray(),
+      //   cameraRight: cameraRightRef.current.toArray(),
+      // });
     };
 
     window.addEventListener("keydown", debugMovement);
@@ -419,7 +419,7 @@ export default function ThreeScene({
       // Tell React to replace the Run button with the Exit button.
       onEnterTruck?.();
 
-      console.log("Entered truck. Distance:", distance);
+      // console.log("Entered truck. Distance:", distance);
     };
 
     canvas.addEventListener("click", handleTruckClick);
@@ -501,12 +501,12 @@ export default function ThreeScene({
         const truck = gltf.scene;
 
         truck.traverse((child) => {
-          console.log(
-            "Truck object:",
-            child.name,
-            "World position:",
-            child.getWorldPosition(new THREE.Vector3()),
-          );
+          // console.log(
+          //   "Truck object:",
+          //   child.name,
+          //   "World position:",
+          //   child.getWorldPosition(new THREE.Vector3()),
+          // );
         });
 
         const truckBody = truck.getObjectByName("truck_body");
@@ -613,7 +613,7 @@ export default function ThreeScene({
         truck.add(prompt);
         drivePromptRef.current = prompt;
 
-        console.log("Truck loaded:", truck);
+        // console.log("Truck loaded:", truck);
       },
       undefined,
       (error) => {
@@ -639,13 +639,13 @@ export default function ThreeScene({
 
         world.name = "lowpoly_world";
 
-        console.log("World loaded");
-        console.log("walls object:", world.getObjectByName("walls"));
-        console.log("knight object:", world.getObjectByName("knight"));
+        // console.log("World loaded");
+        // console.log("walls object:", world.getObjectByName("walls"));
+        // console.log("knight object:", world.getObjectByName("knight"));
 
         world.traverse((object) => {
           if (object.name.toLowerCase().includes("knight")) {
-            console.log("Knight-like object:", object.name, object.type);
+            // console.log("Knight-like object:", object.name, object.type);
           }
         });
 
@@ -752,7 +752,7 @@ export default function ThreeScene({
 
             knightLabelRef.current = label;
 
-            console.log("Knight label created.");
+            // console.log("Knight label created.");
           } else {
             console.error('Could not find object named "knight".');
           }
@@ -908,10 +908,10 @@ export default function ThreeScene({
             handleAnimalPointerMove,
           );
 
-          console.log(
-            "Animals found:",
-            animalObjectsRef.current.map((animal) => animal.name),
-          );
+          // console.log(
+          //   "Animals found:",
+          //   animalObjectsRef.current.map((animal) => animal.name),
+          // );
 
           const handleAnimalClick = (event) => {
             const rect = renderer.domElement.getBoundingClientRect();
@@ -995,25 +995,25 @@ export default function ThreeScene({
 
           const wallBounds = new THREE.Box3().setFromObject(walls);
 
-          console.log("WALL BOUNDS:", {
-            min: wallBounds.min.toArray(),
-            max: wallBounds.max.toArray(),
-            size: wallBounds.getSize(new THREE.Vector3()).toArray(),
-          });
+          // console.log("WALL BOUNDS:", {
+          //   min: wallBounds.min.toArray(),
+          //   max: wallBounds.max.toArray(),
+          //   size: wallBounds.getSize(new THREE.Vector3()).toArray(),
+          // });
 
-          console.log(
-            "Walls world position:",
-            walls.getWorldPosition(new THREE.Vector3()),
-          );
+          // console.log(
+          //   "Walls world position:",
+          //   walls.getWorldPosition(new THREE.Vector3()),
+          // );
 
-          console.log(
-            "Walls world bounds:",
-            new THREE.Box3().setFromObject(walls),
-          );
+          // console.log(
+          //   "Walls world bounds:",
+          //   new THREE.Box3().setFromObject(walls),
+          // );
 
-          console.log("First wall triangle:", triangles[0]);
+          // console.log("First wall triangle:", triangles[0]);
 
-          console.log("Wall collision triangles:", triangles.length);
+          // console.log("Wall collision triangles:", triangles.length);
         } else {
           console.error('Could not find a mesh named "walls".');
         }
@@ -1137,10 +1137,10 @@ export default function ThreeScene({
           computer.userData.originalScale = computer.scale.clone();
         });
 
-        console.log(
-          "Interactive computers found:",
-          computerObjectsRef.current.map((computer) => computer.name),
-        );
+        // console.log(
+        //   "Interactive computers found:",
+        //   computerObjectsRef.current.map((computer) => computer.name),
+        // );
 
         if (!world.parent) {
           scene.add(world);
@@ -1152,7 +1152,7 @@ export default function ThreeScene({
           postBoxRef.current.userData.originalScale =
             postBoxRef.current.scale.clone();
 
-          console.log("Post box found:", postBoxRef.current);
+          // console.log("Post box found:", postBoxRef.current);
         } else {
           console.warn("post_box not found in the world");
         }
@@ -1247,7 +1247,7 @@ export default function ThreeScene({
           ufcBeltRef.current.userData.originalScale =
             ufcBeltRef.current.scale.clone();
 
-          console.log("UFC belt found:", ufcBeltRef.current);
+          // console.log("UFC belt found:", ufcBeltRef.current);
         } else {
           console.warn("ufc_belt not found in the world");
         }
@@ -1344,10 +1344,10 @@ export default function ThreeScene({
           .map((name) => world.getObjectByName(name))
           .filter(Boolean);
 
-        console.log(
-          "Boards found:",
-          boardObjectsRef.current.map((board) => board.name),
-        );
+        // console.log(
+        //   "Boards found:",
+        //   boardObjectsRef.current.map((board) => board.name),
+        // );
 
         const handleBoardClick = (event) => {
           const rect = renderer.domElement.getBoundingClientRect();
@@ -1455,7 +1455,7 @@ export default function ThreeScene({
           handleBoardPointerMove,
         );
 
-        console.log("Low-poly world loaded:", world);
+        // console.log("Low-poly world loaded:", world);
       },
       undefined,
       (error) => {
@@ -1536,11 +1536,11 @@ export default function ThreeScene({
           bodyBox.clampPoint(characterPosition, closestPoint);
 
           const distance = characterPosition.distanceTo(closestPoint);
-          // console.log(
-          //   "Character X/Z:",
-          //   characterPosition.x,
-          //   characterPosition.z,
-          // );
+          console.log(
+            "Character X/Z:",
+            characterPosition.x,
+            characterPosition.z,
+          );
           // console.log(
           //   "Truck body X/Z:",
           //   truckBodyPosition.x,
@@ -1672,14 +1672,14 @@ export default function ThreeScene({
             ),
           );
 
-          console.log("CHARACTER BOX MIN:", collisionBox.min.toArray());
-          console.log("CHARACTER BOX MAX:", collisionBox.max.toArray());
-          console.log("CHARACTER POSITION:", character.position.toArray());
+          // console.log("CHARACTER BOX MIN:", collisionBox.min.toArray());
+          // console.log("CHARACTER BOX MAX:", collisionBox.max.toArray());
+          // console.log("CHARACTER POSITION:", character.position.toArray());
 
-          console.log("CHARACTER COLLISION BOX:", {
-            min: collisionBox.min.toArray(),
-            max: collisionBox.max.toArray(),
-          });
+          // console.log("CHARACTER COLLISION BOX:", {
+          //   min: collisionBox.min.toArray(),
+          //   max: collisionBox.max.toArray(),
+          // });
 
           // Test whether the character can move to a proposed position.
           const canMoveTo = (testPosition) => {
@@ -1729,12 +1729,12 @@ export default function ThreeScene({
             }
 
             if (hitCount > 0) {
-              console.log("WALL COLLISION DETECTED:", {
-                hitCount,
-                position: testPosition.toArray(),
-                boxMin: testBox.min.toArray(),
-                boxMax: testBox.max.toArray(),
-              });
+              // console.log("WALL COLLISION DETECTED:", {
+              //   hitCount,
+              //   position: testPosition.toArray(),
+              //   boxMin: testBox.min.toArray(),
+              //   boxMax: testBox.max.toArray(),
+              // });
 
               return false;
             }
@@ -2251,8 +2251,8 @@ export default function ThreeScene({
       characterRef.current = null;
     }
 
-    console.log("Loading character:", selectedCharacter.name);
-    console.log("Model path:", selectedCharacter.idle);
+    // console.log("Loading character:", selectedCharacter.name);
+    // console.log("Model path:", selectedCharacter.idle);
 
     loader.load(
       selectedCharacter.idle,
@@ -2336,7 +2336,7 @@ export default function ThreeScene({
           },
         );
 
-        console.log("Character loaded:", selectedCharacter.name);
+        // console.log("Character loaded:", selectedCharacter.name);
       },
       undefined,
       (error) => {
