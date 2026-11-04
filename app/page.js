@@ -31,6 +31,7 @@ export default function Home() {
 
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   return (
     <main>
@@ -45,6 +46,7 @@ export default function Home() {
         }}
         onBoardClick={setSelectedBoard}
         onPostBoxClick={() => setIsFeedbackOpen(true)}
+        onUfcBeltClick={() => setIsAboutOpen(true)}
       />
 
       <InstructionPopup />
@@ -99,7 +101,15 @@ export default function Home() {
         onClose={() => setIsFeedbackOpen(false)}
       />
 
-      {/* <AboutPopup /> */}
+      {isAboutOpen && (
+        <AboutPopup
+          onClose={() => setIsAboutOpen(false)}
+          summary={`I'm Akash, an engineering student and developer interested in building interactive web experiences.`}
+          linkedinUrl="https://www.linkedin.com/in/YOUR_USERNAME/"
+          githubUrl="https://github.com/YOUR_USERNAME"
+          email="akashdpcali@gmail.com"
+        />
+      )}
 
       {/* <LoadingPage /> */}
 

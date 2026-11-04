@@ -25,6 +25,7 @@ export default function ThreeScene({
   onExitTruck,
   onBoardClick,
   onPostBoxClick,
+  onUfcBeltClick,
 }) {
   //Charecter
   const mountRef = useRef(null);
@@ -1309,6 +1310,33 @@ export default function ThreeScene({
           handleUfcBeltPointerMove,
         );
 
+        const handleUfcBeltClick = (event) => {
+          if (!ufcBeltRef.current) return;
+
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObject(
+            ufcBeltRef.current,
+            true,
+          );
+
+          if (intersections.length === 0) return;
+
+          onUfcBeltClick?.();
+        };
+
+        renderer.domElement.addEventListener("click", handleUfcBeltClick);
+
+        renderer.domElement.addEventListener("click", handleUfcBeltClick);
+
         // Find all three boards
         const boardNames = ["old_board", "me_board", "conor_board"];
 
@@ -2059,7 +2087,7 @@ export default function ThreeScene({
 
       // UFC Belt Rotation
       if (ufcBeltRef.current) {
-        ufcBeltRef.current.rotation.y += delta * 0.8;
+        ufcBeltRef.current.rotation.y += delta * 2;
       }
 
       // Remove completed animations
