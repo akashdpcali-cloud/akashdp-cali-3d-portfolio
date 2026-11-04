@@ -141,6 +141,11 @@ export default function ThreeScene({
   const postBoxRef = useRef(null);
   const hoveredPostBoxRef = useRef(null);
 
+  // ufc belt
+
+  const ufcBeltRef = useRef(null);
+  const hoveredUfcBeltRef = useRef(null);
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
@@ -1229,6 +1234,76 @@ export default function ThreeScene({
 
         renderer.domElement.addEventListener("click", handlePostBoxClick);
 
+        // UFC Belt
+        ufcBeltRef.current = world.getObjectByName("ufc_belt");
+
+        if (ufcBeltRef.current) {
+          ufcBeltRef.current.userData.originalScale =
+            ufcBeltRef.current.scale.clone();
+
+          console.log("UFC belt found:", ufcBeltRef.current);
+        } else {
+          console.warn("ufc_belt not found in the world");
+        }
+
+        const handleUfcBeltPointerMove = (event) => {
+          if (!ufcBeltRef.current) return;
+
+          const rect = renderer.domElement.getBoundingClientRect();
+
+          const pointer = new THREE.Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1,
+          );
+
+          const raycaster = new THREE.Raycaster();
+
+          raycaster.setFromCamera(pointer, camera);
+
+          const intersections = raycaster.intersectObject(
+            ufcBeltRef.current,
+            true,
+          );
+
+          const isHovering = intersections.length > 0;
+
+          hoveredUfcBeltRef.current = isHovering ? ufcBeltRef.current : null;
+
+          if (isHovering) {
+            ufcBeltRef.current.scale
+              .copy(ufcBeltRef.current.userData.originalScale)
+              .multiplyScalar(1.15);
+          } else {
+            ufcBeltRef.current.scale.copy(
+              ufcBeltRef.current.userData.originalScale,
+            );
+          }
+
+          // Preserve outlines from other interactive objects
+          outlinePass.selectedObjects = [
+            ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
+
+            ...(hoveredPostBoxRef.current ? [hoveredPostBoxRef.current] : []),
+
+            ...(hoveredUfcBeltRef.current ? [hoveredUfcBeltRef.current] : []),
+          ];
+
+          // Coordinate cursor with other interactive objects
+          renderer.domElement.style.cursor =
+            hoveredUfcBeltRef.current ||
+            hoveredComputerRef.current ||
+            hoveredPostBoxRef.current ||
+            hoveredAnimalRef.current ||
+            hoveredBoardRef.current
+              ? "pointer"
+              : "default";
+        };
+
+        renderer.domElement.addEventListener(
+          "pointermove",
+          handleUfcBeltPointerMove,
+        );
+
         // Find all three boards
         const boardNames = ["old_board", "me_board", "conor_board"];
 
@@ -1974,6 +2049,11 @@ export default function ThreeScene({
           completedAnimations.push(index);
         }
       });
+
+      // UFC Belt Rotation
+      if (ufcBeltRef.current) {
+        ufcBeltRef.current.rotation.y += delta * 0.8;
+      }
 
       // Remove completed animations
       for (const index of completedAnimations.reverse()) {

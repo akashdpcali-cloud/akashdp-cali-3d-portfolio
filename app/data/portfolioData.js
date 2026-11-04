@@ -115,6 +115,7 @@ export const Props = {
   mcgregor: "shut your mouth mate",
 };
 
+// BOARD POPUP DATA
 export const BoardPopupData = [
   {
     board: "old_board",
@@ -138,3 +139,8 @@ export const BoardPopupData = [
     link: null,
   },
 ];
+
+// ABOUT ME POPUP DATA
+
+export const AboutmePopupSummary =
+  "hello this is akash dp i am a 3d fullstack developer";
