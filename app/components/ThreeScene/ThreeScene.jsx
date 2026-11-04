@@ -673,22 +673,51 @@ export default function ThreeScene({
             // Create canvas
             const canvas = document.createElement("canvas");
             canvas.width = 512;
-            canvas.height = 128;
+            const fontSize = 24;
+            const lineHeight = 30;
+            const maxTextWidth = 460;
+            const measureContext = canvas.getContext("2d");
+            measureContext.font = `bold ${fontSize}px Arial`;
+
+            const lines = [];
+            let line = "";
+
+            for (const word of Props.knight.split(/\s+/)) {
+              const candidate = line ? `${line} ${word}` : word;
+
+              if (
+                line &&
+                measureContext.measureText(candidate).width > maxTextWidth
+              ) {
+                lines.push(line);
+                line = word;
+              } else {
+                line = candidate;
+              }
+            }
+
+            if (line) lines.push(line);
+
+            canvas.height = Math.max(128, lines.length * lineHeight + 48);
 
             const context = canvas.getContext("2d");
-
-            // Background
             context.fillStyle = "rgba(15, 23, 42, 0.9)";
             context.beginPath();
-            context.roundRect(10, 10, 492, 108, 24);
+            context.roundRect(10, 10, 492, canvas.height - 20, 24);
             context.fill();
 
-            // Text
             context.fillStyle = "#ffffff";
-            context.font = "bold 42px Arial";
+            context.font = `bold ${fontSize}px Arial`;
             context.textAlign = "center";
-            context.textBaseline = "middle";
-            context.fillText(`${Props.knight}`, 256, 64);
+            context.textBaseline = "top";
+            lines.forEach((textLine, index) => {
+              context.fillText(
+                textLine,
+                canvas.width / 2,
+                (canvas.height - lines.length * lineHeight) / 2 +
+                  index * lineHeight,
+              );
+            });
 
             // Create texture
             const texture = new THREE.CanvasTexture(canvas);
@@ -702,12 +731,12 @@ export default function ThreeScene({
 
             const label = new THREE.Sprite(material);
 
-            label.scale.set(4, 1, 1);
+            label.scale.set(4, (4 * canvas.height) / canvas.width, 1);
 
             // Position above the knight
             label.position.set(
               knightCenter.x,
-              knightCenter.y + 3,
+              knightCenter.y + 3.5,
               knightCenter.z,
             );
 

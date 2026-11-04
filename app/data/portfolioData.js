@@ -110,7 +110,8 @@ export const Props = {
     "MUUUUU",
   ],
   truck: "Click to Drive",
-  knight: "knight",
+  knight:
+    "Tell the mountains to move, or I will cut through them. Arrows can darken the sky, and the enemy can charge, but as long as the war drums keep beating, the army keeps moving forward. And you are no different. They can block your road, steal your time, bury your name, but not your heart. So march forward, because as long as that drum in your chest keeps beating, no mountain on earth can stand in your way.",
   mcgregor: "shut your mouth mate",
 };
 
