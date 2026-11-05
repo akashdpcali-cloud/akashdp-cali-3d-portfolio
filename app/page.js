@@ -16,6 +16,7 @@ import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
 import BoardPopup from "./components/BoardPopup/BoardPopup";
 import FeedbackPopup from "./components/FeedbackPopup/FeedbackPopup";
 import AboutPopup from "./components/AboutPopup/AboutPopup";
+import MapTrigger from "./components/MapTrigger/MapTrigger";
 import MapPopup from "./components/MapPopup/MapPopup";
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
@@ -33,6 +34,7 @@ export default function Home() {
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   return (
     <main>
@@ -112,7 +114,9 @@ export default function Home() {
         />
       )}
 
-      <MapPopup />
+      <MapTrigger onClick={() => setIsMapOpen(true)} />
+
+      {isMapOpen && <MapPopup onClose={() => setIsMapOpen(false)} />}
 
       {/* <LoadingPage /> */}
 

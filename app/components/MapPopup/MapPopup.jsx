@@ -17,12 +17,16 @@ const coordinates = {
   old: [50, 136],
 };
 
-export default function MapPopup() {
+export default function MapPopup({ onClose }) {
   return (
     <div className="map-popup">
       <div className="map-popup-header">
         <div className="map-popup-title">Map</div>
-        <button className="map-popup-close">
+        <button
+          className="map-popup-close"
+          onClick={onClose}
+          aria-label="Close map"
+        >
           <IoClose size={22} />
         </button>
       </div>
