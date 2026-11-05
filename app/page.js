@@ -16,6 +16,7 @@ import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
 import BoardPopup from "./components/BoardPopup/BoardPopup";
 import FeedbackPopup from "./components/FeedbackPopup/FeedbackPopup";
 import AboutPopup from "./components/AboutPopup/AboutPopup";
+import MapPopup from "./components/MapPopup/MapPopup";
 // import CharacterButton from "./components/CharacterButton/CharacterButton";
 // import CharacterPopup from "./components/CharacterPopup/CharacterPopup";
 import LoadingPage from "./components/LoadingPage/LoadingPage";
@@ -110,6 +111,8 @@ export default function Home() {
           email="akashdpcali@gmail.com"
         />
       )}
+
+      <MapPopup />
 
       {/* <LoadingPage /> */}
 

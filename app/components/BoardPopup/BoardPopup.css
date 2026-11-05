@@ -40,7 +40,7 @@
   flex-shrink: 0;
 }
 
-.boardpopup-title {
+.map-popup-title {
   font-size: clamp(18px, 3vw, 23px);
   font-weight: 800;
   letter-spacing: 0.3px;

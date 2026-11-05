@@ -1,0 +1,310 @@
+.map-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(255, 30, 0);
+  z-index: 1000;
+  width: 600px;
+  height: 540px;
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  border: solid 2px red;
+  border-radius: 5px;
+  padding: 0px 10px;
+  box-shadow: 0px 0px 200px black;
+}
+
+.map-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 18px 22px;
+
+  background: rgb(255, 30, 0);
+  color: #f4f7fb;
+
+  flex-shrink: 0;
+}
+
+.boardpopup-title {
+  font-size: clamp(18px, 3vw, 23px);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+
+  overflow-wrap: anywhere;
+}
+.map-popup-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 10px;
+
+  background: rgba(244, 247, 251, 0.18);
+  color: #f4f7fb;
+
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.map-popup-close {
+  background: rgba(244, 247, 251, 0.3);
+  transform: scale(1.08);
+}
+
+.map-display-div {
+  position: relative;
+  background-color: white;
+}
+
+.map-img {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  width: 100%;
+  border-radius: 5px;
+}
+
+.location {
+  position: absolute;
+  z-index: 10001;
+  width: min-content;
+  cursor: pointer;
+  transition: 0.5s;
+  color: black;
+}
+.location :hover {
+  color: #1e293b;
+}
+
+.spawn {
+  top: 180px;
+  left: 120px;
+}
+
+.explore {
+  top: 185px;
+  left: 215px;
+}
+
+.feedback {
+  top: 290px;
+  left: 230px;
+}
+
+.about_me {
+  top: 280px;
+  left: 328px;
+}
+
+.cave {
+  top: 180px;
+  left: 360px;
+}
+
+.projects {
+  top: 80px;
+  left: 335px;
+}
+.tech_stack {
+  top: 90px;
+  left: 225px;
+}
+.inspiration {
+  top: 280px;
+  left: 420px;
+}
+
+.profession {
+  top: 185px;
+  left: 420px;
+}
+
+.old_me {
+  top: 85px;
+  left: 420px;
+}
+
+/* 2. Tooltip Bubble Design */
+.location::after {
+  content: attr(
+    data-tooltip
+  ); /* Pulls text dynamically from HTML data attribute */
+  position: absolute;
+  bottom: 125%; /* Places the tooltip above the button */
+  left: 50%;
+  transform: translateX(-50%) scale(0.9); /* Centers horizontally & shrinks for animation */
+
+  /* Styling & Typography */
+  background-color: #1e293b; /* Sleek slate-dark background */
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap; /* Prevents unwanted text wrapping */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+
+  /* State Management & Transition */
+  opacity: 0;
+  pointer-events: none; /* Prevents hovering conflicts */
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* 3. Small Indicator Arrow */
+.location::before {
+  content: "";
+  position: absolute;
+  bottom: 105%; /* Aligns with the bottom edge of the tooltip bubble */
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Pure CSS Triangle Border Hack */
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+/* 4. Interactive Hover & Focus Reveal */
+.location:hover::after,
+.location:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1); /* Snaps up to full size smoothly */
+}
+
+.location:hover::before,
+.location:focus-visible::before {
+  opacity: 1;
+}
+
+@media (max-width: 650px) {
+  .map-popup {
+    width: 400px;
+    height: 380px;
+  }
+  .spawn {
+    top: 110px;
+    left: 75px;
+  }
+
+  .explore {
+    top: 110px;
+    left: 138px;
+  }
+
+  .feedback {
+    top: 185px;
+    left: 145px;
+  }
+
+  .about_me {
+    top: 172px;
+    left: 209px;
+  }
+
+  .cave {
+    top: 105px;
+    left: 228px;
+  }
+
+  .projects {
+    top: 40px;
+    left: 213px;
+  }
+  .tech_stack {
+    top: 50px;
+    left: 145px;
+  }
+  .inspiration {
+    top: 172px;
+    left: 268px;
+  }
+
+  .profession {
+    top: 110px;
+    left: 268px;
+  }
+
+  .old_me {
+    top: 40px;
+    left: 268px;
+  }
+}
+
+@media (max-width: 410px) {
+  .map-popup {
+    width: 325px;
+    height: 330px;
+  }
+  .location svg {
+    height: 30px;
+    width: 30px;
+  }
+  .spawn {
+    top: 82px;
+    left: 58px;
+  }
+
+  .explore {
+    top: 85px;
+    left: 105px;
+  }
+
+  .feedback {
+    top: 145px;
+    left: 115px;
+  }
+
+  .about_me {
+    top: 135px;
+    left: 165px;
+  }
+
+  .cave {
+    top: 83px;
+    left: 182px;
+  }
+
+  .projects {
+    top: 26px;
+    left: 168px;
+  }
+  .tech_stack {
+    top: 35px;
+    left: 112px;
+  }
+  .inspiration {
+    top: 136px;
+    left: 212px;
+  }
+
+  .profession {
+    top: 85px;
+    left: 212px;
+  }
+
+  .old_me {
+    top: 30px;
+    left: 212px;
+  }
+}
