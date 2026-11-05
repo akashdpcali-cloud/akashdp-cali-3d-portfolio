@@ -26,6 +26,7 @@ export default function ThreeScene({
   onBoardClick,
   onPostBoxClick,
   onUfcBeltClick,
+  teleportTarget,
 }) {
   //Charecter
   const mountRef = useRef(null);
@@ -146,6 +147,15 @@ export default function ThreeScene({
 
   const ufcBeltRef = useRef(null);
   const hoveredUfcBeltRef = useRef(null);
+
+  useEffect(() => {
+    if (!teleportTarget || !characterRef.current) return;
+
+    characterRef.current.position.x = teleportTarget.x;
+    characterRef.current.position.z = teleportTarget.z;
+
+    characterRef.current.updateMatrixWorld(true);
+  }, [teleportTarget]);
 
   useEffect(() => {
     isRunningRef.current = isRunning;

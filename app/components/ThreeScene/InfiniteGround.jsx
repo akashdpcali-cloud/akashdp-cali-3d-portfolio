@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 export default function InfiniteGround(scene) {
   // Change this color whenever you want to change the ground.
-  const GRASS_COLOR = 0xff4200;
+  const GRASS_COLOR = 0x4a90e2;
 
   const groundGeometry = new THREE.PlaneGeometry(2000, 2000);
 

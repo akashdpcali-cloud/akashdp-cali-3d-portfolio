@@ -5,23 +5,24 @@ import { IoMdPin } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 
 const coordinates = {
-  spawn: [0, 0],
-  explore: [0, 46],
-  feedback: [-52, 55],
-  about: [-46, 103],
-  cave: [10, 118],
-  projects: [47, 102],
-  tech_stack: [48, 69],
-  conor: [-45, 136],
-  me: [0, 136],
-  old: [50, 136],
+  SPAWN: [0, 0],
+  EXPLORE: [0, 46],
+  FEEDBACK: [-52, 55],
+  ABOUT: [-46, 103],
+  CAVE: [10, 118],
+  PROJECTS: [47, 102],
+  "TECH STACK": [48, 69],
+  INSPIRATION: [-45, 136],
+  PROFESSION: [0, 136],
+  "OLD ME": [50, 136],
 };
 
-export default function MapPopup({ onClose }) {
+export default function MapPopup({ onClose, onLocationSelect }) {
   return (
     <div className="map-popup">
       <div className="map-popup-header">
         <div className="map-popup-title">Map</div>
+
         <button
           className="map-popup-close"
           onClick={onClose}
@@ -30,42 +31,89 @@ export default function MapPopup({ onClose }) {
           <IoClose size={22} />
         </button>
       </div>
+
       <div className="map-display-div">
         <img src="/assets/map.jpeg" alt="" className="map-img" />
 
-        <div className="location spawn" data-tooltip="SPAWN">
+        <button
+          className="location spawn"
+          data-tooltip="SPAWN"
+          onClick={() => onLocationSelect(coordinates.SPAWN)}
+        >
           <IoMdPin size={32} />
-        </div>
+        </button>
 
-        <div className="location explore" data-tooltip="EXPLORE">
+        <button
+          className="location explore"
+          data-tooltip="EXPLORE"
+          onClick={() => onLocationSelect(coordinates.EXPLORE)}
+        >
           <IoMdPin size={32} />
-        </div>
+        </button>
 
-        <div className="location feedback" data-tooltip="FEEDBACK">
+        <button
+          className="location feedback"
+          data-tooltip="FEEDBACK"
+          onClick={() => onLocationSelect(coordinates.FEEDBACK)}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location about_me" data-tooltip="ABOUT">
-          <IoMdPin size={32} />
-        </div>
+        </button>
 
-        <div className="location cave" data-tooltip="CAVE">
+        <button
+          className="location about_me"
+          data-tooltip="ABOUT"
+          onClick={() => onLocationSelect(coordinates.ABOUT)}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location projects" data-tooltip="PROJECTS">
+        </button>
+
+        <button
+          className="location cave"
+          data-tooltip="CAVE"
+          onClick={() => onLocationSelect(coordinates.CAVE)}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location tech_stack" data-tooltip="TECH STACK">
+        </button>
+
+        <button
+          className="location projects"
+          data-tooltip="PROJECTS"
+          onClick={() => onLocationSelect(coordinates.PROJECTS)}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location inspiration" data-tooltip="INSPIRATION">
+        </button>
+
+        <button
+          className="location tech_stack"
+          data-tooltip="TECH STACK"
+          onClick={() => onLocationSelect(coordinates["TECH STACK"])}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location profession" data-tooltip="PROFESSION">
+        </button>
+
+        <button
+          className="location inspiration"
+          data-tooltip="INSPIRATION"
+          onClick={() => onLocationSelect(coordinates.INSPIRATION)}
+        >
           <IoMdPin size={32} />
-        </div>
-        <div className="location old_me" data-tooltip="OLD ME">
+        </button>
+
+        <button
+          className="location profession"
+          data-tooltip="PROFESSION"
+          onClick={() => onLocationSelect(coordinates.PROFESSION)}
+        >
           <IoMdPin size={32} />
-        </div>
+        </button>
+
+        <button
+          className="location old_me"
+          data-tooltip="OLD ME"
+          onClick={() => onLocationSelect(coordinates["OLD ME"])}
+        >
+          <IoMdPin size={32} />
+        </button>
       </div>
     </div>
   );

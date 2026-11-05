@@ -36,6 +36,8 @@ export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
 
+  const [mapTarget, setMapTarget] = useState(null);
+
   return (
     <main>
       <ThreeScene
@@ -50,6 +52,7 @@ export default function Home() {
         onBoardClick={setSelectedBoard}
         onPostBoxClick={() => setIsFeedbackOpen(true)}
         onUfcBeltClick={() => setIsAboutOpen(true)}
+        teleportTarget={mapTarget}
       />
 
       <InstructionPopup />
@@ -116,7 +119,19 @@ export default function Home() {
 
       <MapTrigger onClick={() => setIsMapOpen(true)} />
 
-      {isMapOpen && <MapPopup onClose={() => setIsMapOpen(false)} />}
+      {isMapOpen && (
+        <MapPopup
+          onClose={() => setIsMapOpen(false)}
+          onLocationSelect={(coords) => {
+            setMapTarget({
+              x: coords[0],
+              z: coords[1],
+            });
+
+            setIsMapOpen(false);
+          }}
+        />
+      )}
 
       {/* <LoadingPage /> */}
 
