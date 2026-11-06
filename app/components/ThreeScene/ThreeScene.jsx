@@ -305,6 +305,39 @@ export default function ThreeScene({
     }));
     let speedLineTime = 0;
 
+    const truckSpeedLineGeometry = new THREE.BufferGeometry();
+    truckSpeedLineGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(speedLineCount * 3 * 3), 3),
+    );
+    const truckSpeedLineMaterial = new THREE.MeshBasicMaterial({
+      color: 0xd9f4ff,
+      transparent: true,
+      opacity: 0.72,
+      depthTest: false,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false,
+    });
+    const truckSpeedLines = new THREE.Mesh(
+      truckSpeedLineGeometry,
+      truckSpeedLineMaterial,
+    );
+    truckSpeedLines.visible = false;
+    truckSpeedLines.renderOrder = 11;
+    truckSpeedLines.frustumCulled = false;
+    scene.add(truckSpeedLines);
+
+    const truckSpeedLineDetails = Array.from(
+      { length: speedLineCount },
+      () => ({
+        angle: Math.random() * Math.PI * 2,
+        progress: Math.random(),
+        speed: 0.35 + Math.random() * 0.55,
+        width: 0.005 + Math.random() * 0.003,
+      }),
+    );
+
     // Renderer
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -2214,6 +2247,73 @@ export default function ThreeScene({
         speedLineMaterial.opacity = 0.55 + Math.sin(speedLineTime * 5) * 0.12;
       }
 
+      const truckSpeedLinesActive =
+        isDrivingRef.current &&
+        (keys.w ||
+          keys.arrowup ||
+          keys.s ||
+          keys.arrowdown ||
+          joystick.w ||
+          joystick.s);
+      truckSpeedLines.visible = truckSpeedLinesActive;
+
+      if (truckSpeedLinesActive) {
+        truckSpeedLines.position.copy(camera.position);
+        truckSpeedLines.quaternion.copy(camera.quaternion);
+
+        const depth = 5;
+        const halfHeight =
+          depth * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const halfWidth = halfHeight * camera.aspect;
+        const positions = truckSpeedLineGeometry.attributes.position;
+
+        truckSpeedLineDetails.forEach((line, index) => {
+          line.progress += delta * line.speed;
+
+          if (line.progress >= 1) {
+            line.angle = Math.random() * Math.PI * 2;
+            line.progress = Math.random() * 0.08;
+            line.speed = 0.35 + Math.random() * 0.55;
+            line.width = 0.005 + Math.random() * 0.003;
+          }
+
+          const innerRadius = 0.62 + line.progress * 0.28;
+          const cosAngle = Math.cos(line.angle);
+          const sinAngle = Math.sin(line.angle);
+          const edgeRadius = Math.min(
+            1 / Math.abs(cosAngle),
+            1 / Math.abs(sinAngle),
+          );
+          const outerRadius = edgeRadius * 1.02;
+          const tipX = cosAngle * innerRadius * halfWidth;
+          const tipY = sinAngle * innerRadius * halfHeight;
+          const baseX = cosAngle * outerRadius * halfWidth;
+          const baseY = sinAngle * outerRadius * halfHeight;
+          const halfBaseWidth = line.width * halfHeight;
+          const tangentX = -sinAngle * halfBaseWidth;
+          const tangentY = cosAngle * halfBaseWidth;
+          const vertex = index * 3;
+
+          positions.setXYZ(vertex, tipX, tipY, -depth);
+          positions.setXYZ(
+            vertex + 1,
+            baseX + tangentX,
+            baseY + tangentY,
+            -depth,
+          );
+          positions.setXYZ(
+            vertex + 2,
+            baseX - tangentX,
+            baseY - tangentY,
+            -depth,
+          );
+        });
+
+        positions.needsUpdate = true;
+        truckSpeedLineMaterial.opacity =
+          0.62 + Math.sin(speedLineTime * 4) * 0.1;
+      }
+
       if (mixerRef.current) {
         mixerRef.current.update(delta);
       }
@@ -2394,6 +2494,9 @@ export default function ThreeScene({
       scene.remove(speedLines);
       speedLineGeometry.dispose();
       speedLineMaterial.dispose();
+      scene.remove(truckSpeedLines);
+      truckSpeedLineGeometry.dispose();
+      truckSpeedLineMaterial.dispose();
 
       renderer.dispose();
 
