@@ -91,6 +91,7 @@ export default function ThreeScene({
   const truckRef = useRef(null);
   const truckCenterOffsetRef = useRef(new THREE.Vector3());
   const isDrivingRef = useRef(false);
+  const truckSpeedRef = useRef(0);
   const drivePromptRef = useRef(null);
   const truckBodyRef = useRef(null);
 
@@ -221,6 +222,7 @@ export default function ThreeScene({
 
       // Enter the truck.
       isDrivingRef.current = true;
+      truckSpeedRef.current = 0;
       character.visible = false;
 
       if (drivePromptRef.current) {
@@ -501,6 +503,7 @@ export default function ThreeScene({
 
       // Enter the truck.
       isDrivingRef.current = true;
+      truckSpeedRef.current = 0;
       setTruckAudioMode("idle");
       character.visible = false;
 
@@ -519,6 +522,7 @@ export default function ThreeScene({
     // Called when the user clicks the React Exit Truck button.
     const handleExitTruck = () => {
       setTruckAudioMode(null);
+      truckSpeedRef.current = 0;
 
       const character = characterRef.current;
       const truckBody = truckBodyRef.current;
@@ -585,10 +589,13 @@ export default function ThreeScene({
     let disposed = false;
     const truckIdleAudio = new Audio("/audio/truck-idle.mp3");
     const truckMoveAudio = new Audio("/audio/truck-move.mp3");
+    const truckBrakeAudio = new Audio("/audio/break.mp3");
     truckIdleAudio.loop = true;
     truckMoveAudio.loop = true;
+    truckBrakeAudio.loop = true;
     truckIdleAudio.volume = 0.1;
     truckMoveAudio.volume = 0.1;
+    truckBrakeAudio.volume = 0.2;
 
     let activeTruckAudio = null;
     let activeTruckAudioMode = null;
@@ -607,7 +614,9 @@ export default function ThreeScene({
           ? truckIdleAudio
           : mode === "move"
             ? truckMoveAudio
-            : null;
+            : mode === "brake"
+              ? truckBrakeAudio
+              : null;
 
       if (activeTruckAudio) {
         activeTruckAudio.play().catch((error) => {
@@ -1954,10 +1963,36 @@ export default function ThreeScene({
 
         const throttle = Number(forward) - Number(backward);
         const steering = Number(right) - Number(left);
-        setTruckAudioMode(throttle !== 0 ? "move" : "idle");
 
-        const driveSpeed = 15;
+        const driveSpeed = 18;
+        const acceleration = 10;
+        const deceleration = 14;
         const turnSpeed = 1.5;
+        const targetSpeed = throttle * driveSpeed;
+        const previousSpeed = truckSpeedRef.current;
+        const speedDifference = targetSpeed - truckSpeedRef.current;
+        const speedChange =
+          (throttle === 0 ? deceleration : acceleration) * delta;
+
+        truckSpeedRef.current += THREE.MathUtils.clamp(
+          speedDifference,
+          -speedChange,
+          speedChange,
+        );
+
+        if (Math.abs(truckSpeedRef.current) < 0.001) {
+          truckSpeedRef.current = 0;
+        }
+
+        const isDecelerating =
+          Math.abs(truckSpeedRef.current) < Math.abs(previousSpeed);
+        setTruckAudioMode(
+          truckSpeedRef.current === 0
+            ? "idle"
+            : isDecelerating
+              ? "brake"
+              : "move",
+        );
 
         // Move in the direction the truck is facing.
         // Get the truck's forward direction in world space.
@@ -1966,10 +2001,10 @@ export default function ThreeScene({
           .setY(0)
           .normalize();
 
-        if (throttle !== 0) {
+        if (truckSpeedRef.current !== 0) {
           const movement = forwardDirection
             .clone()
-            .multiplyScalar(throttle * driveSpeed * delta);
+            .multiplyScalar(truckSpeedRef.current * delta);
 
           const truckBody = truckBodyRef.current;
 
@@ -2008,9 +2043,10 @@ export default function ThreeScene({
         }
 
         // Turn only while moving. Reverse steering flips the turn direction.
-        if (throttle !== 0 && steering !== 0) {
+        if (truckSpeedRef.current !== 0 && steering !== 0) {
           const truckBody = truckBodyRef.current;
-          const yawChange = steering * turnSpeed * delta * Math.sign(throttle);
+          const yawChange =
+            steering * turnSpeed * delta * Math.sign(truckSpeedRef.current);
 
           if (truckBody) {
             // Keep the truck_body origin fixed while rotating the truck root.
@@ -2046,7 +2082,7 @@ export default function ThreeScene({
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x -= throttle * driveSpeed * delta;
+          wheel.rotation.x += truckSpeedRef.current * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
@@ -2064,7 +2100,7 @@ export default function ThreeScene({
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x -= throttle * driveSpeed * delta;
+          wheel.rotation.x -= truckSpeedRef.current * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
@@ -2077,10 +2113,11 @@ export default function ThreeScene({
 
         // Rear wheels: roll only
         if (truckBackWheelsRef.current) {
-          truckBackWheelsRef.current.rotation.x -=
-            throttle * driveSpeed * delta;
+          truckBackWheelsRef.current.rotation.x +=
+            truckSpeedRef.current * delta;
         }
       } else {
+        truckSpeedRef.current = 0;
         setTruckAudioMode(null);
       }
 
@@ -2248,13 +2285,7 @@ export default function ThreeScene({
       }
 
       const truckSpeedLinesActive =
-        isDrivingRef.current &&
-        (keys.w ||
-          keys.arrowup ||
-          keys.s ||
-          keys.arrowdown ||
-          joystick.w ||
-          joystick.s);
+        isDrivingRef.current && truckSpeedRef.current !== 0;
       truckSpeedLines.visible = truckSpeedLinesActive;
 
       if (truckSpeedLinesActive) {
