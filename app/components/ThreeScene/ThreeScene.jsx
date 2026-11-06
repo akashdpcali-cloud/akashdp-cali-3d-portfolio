@@ -438,6 +438,7 @@ export default function ThreeScene({
 
       // Enter the truck.
       isDrivingRef.current = true;
+      setTruckAudioMode("idle");
       character.visible = false;
 
       if (drivePromptRef.current) {
@@ -454,6 +455,8 @@ export default function ThreeScene({
 
     // Called when the user clicks the React Exit Truck button.
     const handleExitTruck = () => {
+      setTruckAudioMode(null);
+
       const character = characterRef.current;
       const truckBody = truckBodyRef.current;
 
@@ -517,6 +520,38 @@ export default function ThreeScene({
     const { ground } = InfiniteGround(scene);
 
     let disposed = false;
+    const truckIdleAudio = new Audio("/audio/truck-idle.mp3");
+    const truckMoveAudio = new Audio("/audio/truck-move.mp3");
+    truckIdleAudio.loop = true;
+    truckMoveAudio.loop = true;
+    truckIdleAudio.volume = 0.5;
+    truckMoveAudio.volume = 0.3;
+
+    let activeTruckAudio = null;
+    let activeTruckAudioMode = null;
+
+    const setTruckAudioMode = (mode) => {
+      if (mode === activeTruckAudioMode) return;
+
+      activeTruckAudio?.pause();
+      if (activeTruckAudio) {
+        activeTruckAudio.currentTime = 0;
+      }
+
+      activeTruckAudioMode = mode;
+      activeTruckAudio =
+        mode === "idle"
+          ? truckIdleAudio
+          : mode === "move"
+            ? truckMoveAudio
+            : null;
+
+      if (activeTruckAudio) {
+        activeTruckAudio.play().catch((error) => {
+          console.error("Failed to play truck audio:", error);
+        });
+      }
+    };
 
     const loadingManager = new THREE.LoadingManager();
 
@@ -1824,6 +1859,7 @@ export default function ThreeScene({
 
       // Monster truck driving controls
       if (truck && isDrivingRef.current) {
+        const positionBeforeMovement = truck.position.clone();
         const keys = keysRef.current;
         const joystick = joystickRef.current;
 
@@ -1885,6 +1921,10 @@ export default function ThreeScene({
             truck.position.z += movement.z;
           }
         }
+
+        const truckMoved =
+          truck.position.distanceToSquared(positionBeforeMovement) > 0;
+        setTruckAudioMode(truckMoved ? "move" : "idle");
 
         // Turn only while moving. Reverse steering flips the turn direction.
         if (throttle !== 0 && steering !== 0) {
@@ -1959,6 +1999,8 @@ export default function ThreeScene({
           truckBackWheelsRef.current.rotation.x +=
             throttle * driveSpeed * delta;
         }
+      } else {
+        setTruckAudioMode(null);
       }
 
       const targetPosition = new THREE.Vector3();
@@ -2234,6 +2276,8 @@ export default function ThreeScene({
 
         mixerRef.current = null;
       }
+
+      setTruckAudioMode(null);
 
       if (characterRef.current) {
         scene.remove(characterRef.current);
