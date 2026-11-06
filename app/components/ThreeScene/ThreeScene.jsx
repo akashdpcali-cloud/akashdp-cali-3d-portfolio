@@ -944,6 +944,10 @@ export default function ThreeScene({
           animalObjectsRef.current = animalNames
             .map((name) => world.getObjectByName(name))
             .filter(Boolean);
+          const sheepAudio = new Audio("/audio/sheep.mp3");
+          const cowAudio = new Audio("/audio/cow.mp3");
+          sheepAudio.volume = 0.7;
+          cowAudio.volume = 0.2;
 
           const handleAnimalPointerMove = (event) => {
             const rect = renderer.domElement.getBoundingClientRect();
@@ -1021,6 +1025,19 @@ export default function ThreeScene({
             }
 
             if (!animal) return;
+
+            const animalAudio = animal.name.startsWith("sheep")
+              ? sheepAudio
+              : animal.name.startsWith("cow")
+                ? cowAudio
+                : null;
+
+            if (animalAudio) {
+              animalAudio.currentTime = 0;
+              animalAudio.play().catch((error) => {
+                console.error(`Failed to play ${animal.name} audio:`, error);
+              });
+            }
 
             // Don't restart an existing animation
             if (
