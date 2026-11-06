@@ -7,7 +7,7 @@ export default function usePopupAnimation(isOpen = true) {
   useLayoutEffect(() => {
     if (!isOpen || !popupRef.current) return;
     const popSound = new Audio("/audio/pop.mp3");
-    popSound.volume = 0.5;
+    popSound.volume = 0.1;
     popSound.play().catch(() => {});
 
     const ctx = gsap.context(() => {

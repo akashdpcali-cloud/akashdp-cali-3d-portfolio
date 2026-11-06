@@ -524,8 +524,8 @@ export default function ThreeScene({
     const truckMoveAudio = new Audio("/audio/truck-move.mp3");
     truckIdleAudio.loop = true;
     truckMoveAudio.loop = true;
-    truckIdleAudio.volume = 0.5;
-    truckMoveAudio.volume = 0.3;
+    truckIdleAudio.volume = 0.1;
+    truckMoveAudio.volume = 0.1;
 
     let activeTruckAudio = null;
     let activeTruckAudioMode = null;
@@ -1859,7 +1859,6 @@ export default function ThreeScene({
 
       // Monster truck driving controls
       if (truck && isDrivingRef.current) {
-        const positionBeforeMovement = truck.position.clone();
         const keys = keysRef.current;
         const joystick = joystickRef.current;
 
@@ -1870,6 +1869,7 @@ export default function ThreeScene({
 
         const throttle = Number(forward) - Number(backward);
         const steering = Number(right) - Number(left);
+        setTruckAudioMode(throttle !== 0 ? "move" : "idle");
 
         const driveSpeed = 15;
         const turnSpeed = 1.5;
@@ -1922,10 +1922,6 @@ export default function ThreeScene({
           }
         }
 
-        const truckMoved =
-          truck.position.distanceToSquared(positionBeforeMovement) > 0;
-        setTruckAudioMode(truckMoved ? "move" : "idle");
-
         // Turn only while moving. Reverse steering flips the turn direction.
         if (throttle !== 0 && steering !== 0) {
           const truckBody = truckBodyRef.current;
@@ -1965,7 +1961,7 @@ export default function ThreeScene({
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x += throttle * driveSpeed * delta;
+          wheel.rotation.x -= throttle * driveSpeed * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
@@ -1983,7 +1979,7 @@ export default function ThreeScene({
 
           wheel.rotation.order = "YXZ";
 
-          wheel.rotation.x += throttle * driveSpeed * delta;
+          wheel.rotation.x -= throttle * driveSpeed * delta;
 
           wheel.rotation.y = THREE.MathUtils.lerp(
             wheel.rotation.y,
@@ -1996,7 +1992,7 @@ export default function ThreeScene({
 
         // Rear wheels: roll only
         if (truckBackWheelsRef.current) {
-          truckBackWheelsRef.current.rotation.x +=
+          truckBackWheelsRef.current.rotation.x -=
             throttle * driveSpeed * delta;
         }
       } else {
