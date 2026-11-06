@@ -354,6 +354,7 @@ export default function ThreeScene({
     renderer.setSize(width, height);
 
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap;
 
     // Canvas
     const canvas = renderer.domElement;
@@ -576,13 +577,20 @@ export default function ThreeScene({
 
     mount.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.HemisphereLight(0xffffff, 0x334155, 2);
+    const ambientLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.8);
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(10, 20, 10);
     directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.set(3000, 3000);
+    directionalLight.shadow.bias = 0.0001;
+    directionalLight.shadow.normalBias = 0.04;
+    directionalLight.shadow.radius = 2;
+    directionalLight.shadow.blurSamples = 12;
     scene.add(directionalLight);
+    scene.add(directionalLight.target);
+    const shadowLightOffset = directionalLight.position.clone();
 
     const { ground } = InfiniteGround(scene);
 
@@ -792,6 +800,12 @@ export default function ThreeScene({
         const world = gltf.scene;
 
         world.name = "lowpoly_world";
+        world.traverse((object) => {
+          if (object.isMesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
 
         // console.log("World loaded");
         // console.log("walls object:", world.getObjectByName("walls"));
@@ -2418,6 +2432,35 @@ export default function ThreeScene({
         animalAnimationsRef.current.splice(index, 1);
       }
 
+      const shadowTarget = hasProximityTarget
+        ? targetPosition
+        : camera.position
+            .clone()
+            .add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(8));
+      const shadowViewDistance = Math.max(
+        camera.position.distanceTo(shadowTarget) * 4,
+        40,
+      );
+      const shadowHalfHeight =
+        shadowViewDistance *
+        Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      const shadowHalfWidth = shadowHalfHeight * camera.aspect;
+      const shadowExtent =
+        Math.hypot(shadowHalfWidth, shadowHalfHeight) + 4;
+      const shadowCamera = directionalLight.shadow.camera;
+
+      directionalLight.target.position.copy(shadowTarget);
+      directionalLight.position.copy(shadowTarget).add(shadowLightOffset);
+      directionalLight.target.updateMatrixWorld();
+      directionalLight.updateMatrixWorld();
+
+      shadowCamera.left = -shadowExtent;
+      shadowCamera.right = shadowExtent;
+      shadowCamera.top = shadowExtent;
+      shadowCamera.bottom = -shadowExtent;
+      shadowCamera.far = shadowLightOffset.length() + shadowViewDistance * 2;
+      shadowCamera.updateProjectionMatrix();
+
       composer.render();
     }
     animate();
@@ -2609,6 +2652,12 @@ export default function ThreeScene({
           savedTransform.rotation.y,
           savedTransform.rotation.z,
         );
+
+        fbx.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+          }
+        });
 
         characterRef.current = fbx;
         scene.add(fbx);
