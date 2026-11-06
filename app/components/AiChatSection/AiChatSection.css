@@ -19,7 +19,6 @@
 
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  font-family: "Roboto", sans-serif;
 }
 
 /* =========================================
@@ -314,7 +313,6 @@
   background: #111f33;
   color: #f4f7fb;
 
-  font-family: "Roboto", sans-serif;
   font-size: 0.88rem;
   line-height: 22px;
 
@@ -464,7 +462,6 @@
 
   background: rgba(255, 255, 255, 0.08);
 
-  font-family: monospace;
   font-size: 0.85em;
 }
 

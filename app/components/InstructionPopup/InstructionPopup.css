@@ -62,8 +62,6 @@
 .instruction-popup-title {
   margin-bottom: 28px;
 
-  font-family: Arial, sans-serif;
-
   font-size: clamp(1.4rem, 3vw, 2rem);
 
   font-weight: 700;
@@ -128,8 +126,6 @@
 */
 
 .instruction-popup-point {
-  font-family: Arial, sans-serif;
-
   font-size: 0.95rem;
 
   line-height: 1.6;
@@ -157,8 +153,6 @@
   background: rgba(220, 235, 255, 0.1);
 
   color: #f4f7fb;
-
-  font-family: Arial, sans-serif;
 
   font-size: 0.9rem;
 

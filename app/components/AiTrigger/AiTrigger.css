@@ -21,8 +21,6 @@
 
   cursor: pointer;
 
-  font-family: Arial, sans-serif;
-
   transition:
     transform 0.25s ease,
     opacity 0.25s ease;

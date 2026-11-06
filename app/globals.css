@@ -9,9 +9,14 @@ body {
   padding: 0;
   width: 100%;
   min-height: 100%;
-  font-family: "Roboto", sans-serif;
+  font-family: var(--font-agency), sans-serif;
 }
 
 body {
   overflow: hidden;
+}
+
+.agency-font {
+  font-family: var(--font-agency), sans-serif;
+  font-weight: 700;
 }
