@@ -3,6 +3,7 @@
 import "./CharacterPopup.css";
 import { characters } from "../../data/portfolioData";
 import { IoClose } from "react-icons/io5";
+import usePopupAnimation from "../usePopupAnimation";
 
 export default function CharacterPopup({
   isOpen,
@@ -10,10 +11,11 @@ export default function CharacterPopup({
   selectedCharacter,
   onSelectCharacter,
 }) {
+  const popupRef = usePopupAnimation(isOpen);
   if (!isOpen) return null;
 
   return (
-    <div className="character-popup">
+    <div className="character-popup" ref={popupRef}>
       <div className="character-popup-header">
         <div className="character-popup-title">PICK YOUR CHARACTER</div>
 

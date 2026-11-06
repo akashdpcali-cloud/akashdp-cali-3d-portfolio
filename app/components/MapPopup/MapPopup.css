@@ -3,7 +3,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgb(255, 30, 0);
+  background-color: #0f172a;
   z-index: 1000;
   width: 600px;
   height: 540px;
@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   row-gap: 10px;
-  border: solid 2px red;
+  border: solid 2px #0f172a;
   border-radius: 5px;
   padding: 0px 10px;
   box-shadow: 0px 0px 200px black;
@@ -25,7 +25,7 @@
 
   padding: 18px 22px;
 
-  background: rgb(255, 30, 0);
+  background: #0f172a;
   color: #f4f7fb;
 
   flex-shrink: 0;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FiX, FiLinkedin, FiGithub, FiMail } from "react-icons/fi";
 import "./AboutPoup.css";
+import usePopupAnimation from "../usePopupAnimation";
 
 const AboutPopup = ({
   onClose,
@@ -12,9 +13,10 @@ const AboutPopup = ({
   email = "akashdpcali@gmail.com",
 }) => {
   const [activeSection, setActiveSection] = useState("summary");
+  const popupRef = usePopupAnimation();
 
   return (
-    <div className="about-popup">
+    <div className="about-popup" ref={popupRef}>
       {/* Header */}
       <div className="about-popup-header">
         <div className="about-popup-title">About Me</div>

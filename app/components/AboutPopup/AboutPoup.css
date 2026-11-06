@@ -16,7 +16,7 @@
   border: 2px solid rgb(255, 30, 0);
   border-radius: 16px;
 
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 200px black;
 
   z-index: 1001;
   overflow: hidden;

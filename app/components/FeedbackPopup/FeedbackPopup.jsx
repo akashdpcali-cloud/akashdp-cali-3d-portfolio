@@ -4,11 +4,15 @@ import { useState } from "react";
 import { FiX, FiSend, FiLoader } from "react-icons/fi";
 import "./FeedbackPopup.css";
 
+import usePopupAnimation from "../usePopupAnimation";
+
 const FeedbackPopup = ({ isOpen, onClose }) => {
   const [feedback, setFeedback] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState("");
+
+  const popupRef = usePopupAnimation(isOpen);
 
   if (!isOpen) return null;
 
@@ -51,7 +55,7 @@ const FeedbackPopup = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="feedback-popup">
+    <div className="feedback-popup" ref={popupRef}>
       <div className="feedback-popup-header">
         <div className="feedback-popup-title">Feedback</div>
 

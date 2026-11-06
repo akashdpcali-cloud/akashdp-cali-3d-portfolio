@@ -3,6 +3,7 @@
 import "./MapPopup.css";
 import { IoMdPin } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
+import usePopupAnimation from "../usePopupAnimation";
 
 const coordinates = {
   SPAWN: [0, 0],
@@ -31,8 +32,9 @@ const Truckcoordinates = {
 };
 
 export default function MapPopup({ onClose, onLocationSelect }) {
+  const popupRef = usePopupAnimation();
   return (
-    <div className="map-popup">
+    <div className="map-popup" ref={popupRef}>
       <div className="map-popup-header">
         <div className="map-popup-title">Map</div>
 
