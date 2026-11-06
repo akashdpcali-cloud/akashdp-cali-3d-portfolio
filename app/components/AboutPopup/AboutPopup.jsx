@@ -4,14 +4,9 @@ import { useState } from "react";
 import { FiX, FiLinkedin, FiGithub, FiMail } from "react-icons/fi";
 import "./AboutPoup.css";
 import usePopupAnimation from "../usePopupAnimation";
+import { AboutmePopupSocial } from "@/app/data/portfolioData";
 
-const AboutPopup = ({
-  onClose,
-  summary = "Write your introduction here.",
-  linkedinUrl = "https://linkedin.com",
-  githubUrl = "https://github.com",
-  email = "akashdpcali@gmail.com",
-}) => {
+const AboutPopup = ({ onClose }) => {
   const [activeSection, setActiveSection] = useState("summary");
   const popupRef = usePopupAnimation();
 
@@ -54,7 +49,7 @@ const AboutPopup = ({
       {/* Summary Section */}
       {activeSection === "summary" && (
         <div className="about-popup-summary-section-div">
-          <p>{summary}</p>
+          <p>{AboutmePopupSocial.summary}</p>
         </div>
       )}
 
@@ -64,7 +59,7 @@ const AboutPopup = ({
           {/* LinkedIn */}
           <a
             className="about-popup-contact-card about-popup-linkedin-card"
-            href={linkedinUrl}
+            href={AboutmePopupSocial.linkedin}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -83,7 +78,7 @@ const AboutPopup = ({
           {/* GitHub */}
           <a
             className="about-popup-contact-card about-popup-github-card"
-            href={githubUrl}
+            href={AboutmePopupSocial.github}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -102,7 +97,7 @@ const AboutPopup = ({
           {/* Gmail */}
           <a
             className="about-popup-contact-card about-popup-gmail-card"
-            href={`mailto:${email}`}
+            href={`mailto:${AboutmePopupSocial.gmail}`}
           >
             <div className="about-popup-contact-icon">
               <FiMail size={23} />

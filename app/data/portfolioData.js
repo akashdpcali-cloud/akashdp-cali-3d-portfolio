@@ -122,14 +122,14 @@ export const BoardPopupData = [
     title: "Old Me",
     content:
       "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
-    link: "https://amazon.com",
+    link: "https://akashdp.vercel.app/",
   },
   {
     board: "me_board",
     title: "resume",
     content:
       "this is my old portrolio built using html, css, js, 3js and gsap as a learning process",
-    link: "https://amazon.com",
+    link: "https://drive.google.com/file/d/1wyel5YMMUk9YlNOpfzuJHQ3f7UAjRWoY/view?usp=sharing",
   },
   {
     board: "conor_board",
@@ -142,5 +142,9 @@ export const BoardPopupData = [
 
 // ABOUT ME POPUP DATA
 
-export const AboutmePopupSummary =
-  "hello this is akash dp i am a 3d fullstack developer";
+export const AboutmePopupSocial = {
+  summary: "hello this is akash dp i am a 3d fullstack developer",
+  linkedin: "https://www.linkedin.com/in/akashdpcali/",
+  github: "https://github.com/akashdpcali-cloud",
+  gmail: "akashdpcali@gmail.com",
+};
