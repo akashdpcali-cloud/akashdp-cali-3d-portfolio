@@ -40,7 +40,8 @@ export default function Home() {
 
   return (
     <main>
-      <ThreeScene
+      <LoadingPage />
+      {/* <ThreeScene
         selectedCharacter={selectedCharacter}
         isRunning={isRunning}
         isDriving={isDriving}
@@ -53,18 +54,18 @@ export default function Home() {
         onPostBoxClick={() => setIsFeedbackOpen(true)}
         onUfcBeltClick={() => setIsAboutOpen(true)}
         teleportTarget={mapTarget}
-      />
+      /> */}
 
-      <InstructionPopup />
+      {/* <InstructionPopup />
       <BGMController />
       <ClickSound />
       <CharacterFrontend
         selectedCharacter={selectedCharacter}
         onSelectCharacter={setSelectedCharacter}
-      />
+      /> */}
       {/* <CharacterButton />
       <CharacterPopup /> */}
-      <Joystick
+      {/* <Joystick
         onMove={(direction) => {
           window.dispatchEvent(
             new CustomEvent("joystickMove", {
@@ -72,14 +73,14 @@ export default function Home() {
             }),
           );
         }}
-      />
-      <AiTrigger onClick={() => setIsAiChatOpen(true)} />
+      /> */}
+      {/* <AiTrigger onClick={() => setIsAiChatOpen(true)} />
       <AiChatSection
         isOpen={isAiChatOpen}
         onClose={() => setIsAiChatOpen(false)}
-      />
+      /> */}
 
-      {isDriving ? (
+      {/* {isDriving ? (
         <ExitTruckButton
           onExit={() => {
             window.dispatchEvent(new CustomEvent("exitTruck"));
@@ -90,9 +91,9 @@ export default function Home() {
           isRunning={isRunning}
           onToggle={() => setIsRunning((prev) => !prev)}
         />
-      )}
+      )} */}
 
-      <BoardPopup
+      {/* <BoardPopup
         data={selectedBoard}
         onClose={() => setSelectedBoard(null)}
         onOpen={() => {
@@ -100,14 +101,14 @@ export default function Home() {
             window.open(selectedBoard.link, "_blank", "noopener,noreferrer");
           }
         }}
-      />
+      /> */}
 
-      <FeedbackPopup
+      {/* <FeedbackPopup
         isOpen={isFeedbackOpen}
         onClose={() => setIsFeedbackOpen(false)}
-      />
+      /> */}
 
-      {isAboutOpen && (
+      {/* {isAboutOpen && (
         <AboutPopup
           onClose={() => setIsAboutOpen(false)}
           summary={`I'm Akash, an engineering student and developer interested in building interactive web experiences.`}
@@ -115,11 +116,11 @@ export default function Home() {
           githubUrl="https://github.com/YOUR_USERNAME"
           email="akashdpcali@gmail.com"
         />
-      )}
+      )} */}
 
-      <MapTrigger onClick={() => setIsMapOpen(true)} />
+      {/* <MapTrigger onClick={() => setIsMapOpen(true)} /> */}
 
-      {isMapOpen && (
+      {/* {isMapOpen && (
         <MapPopup
           onClose={() => setIsMapOpen(false)}
           onLocationSelect={(coords, truckCoords) => {
@@ -135,9 +136,7 @@ export default function Home() {
             setIsMapOpen(false);
           }}
         />
-      )}
-
-      {/* <LoadingPage /> */}
+      )} */}
 
       {/* Your future portfolio components will go here */}
     </main>
