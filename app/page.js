@@ -122,10 +122,14 @@ export default function Home() {
       {isMapOpen && (
         <MapPopup
           onClose={() => setIsMapOpen(false)}
-          onLocationSelect={(coords) => {
+          onLocationSelect={(coords, truckCoords) => {
             setMapTarget({
               x: coords[0],
               z: coords[1],
+              truckTarget: {
+                x: truckCoords[0],
+                z: truckCoords[1],
+              },
             });
 
             setIsMapOpen(false);

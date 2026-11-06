@@ -88,6 +88,7 @@ export default function ThreeScene({
 
   //truck
   const truckRef = useRef(null);
+  const truckCenterOffsetRef = useRef(new THREE.Vector3());
   const isDrivingRef = useRef(false);
   const drivePromptRef = useRef(null);
   const truckBodyRef = useRef(null);
@@ -155,6 +156,18 @@ export default function ThreeScene({
     characterRef.current.position.z = teleportTarget.z;
 
     characterRef.current.updateMatrixWorld(true);
+
+    if (isDrivingRef.current && truckRef.current && teleportTarget.truckTarget) {
+      const truck = truckRef.current;
+      truck.updateWorldMatrix(true, true);
+
+      const truckCenter = truckCenterOffsetRef.current
+        .clone()
+        .applyMatrix4(truck.matrixWorld);
+      truck.position.x += teleportTarget.truckTarget.x - truckCenter.x;
+      truck.position.z += teleportTarget.truckTarget.z - truckCenter.z;
+      truck.updateMatrixWorld(true);
+    }
   }, [teleportTarget]);
 
   useEffect(() => {
@@ -580,6 +593,12 @@ export default function ThreeScene({
 
         scene.add(truck);
         truckRef.current = truck;
+        truck.updateWorldMatrix(true, true);
+        const truckBounds = new THREE.Box3().setFromObject(truck);
+        truckCenterOffsetRef.current.copy(
+          truck.worldToLocal(truckBounds.getCenter(new THREE.Vector3())),
+        );
+
         // Create the "Click to Drive" prompt.
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
@@ -1546,16 +1565,16 @@ export default function ThreeScene({
           bodyBox.clampPoint(characterPosition, closestPoint);
 
           const distance = characterPosition.distanceTo(closestPoint);
-          console.log(
-            "Character X/Z:",
-            characterPosition.x,
-            characterPosition.z,
-          );
           // console.log(
-          //   "Truck body X/Z:",
-          //   truckBodyPosition.x,
-          //   truckBodyPosition.z,
+          //   "Character X/Z:",
+          //   characterPosition.x,
+          //   characterPosition.z,
           // );
+          console.log(
+            "Truck body X/Z:",
+            truckBodyPosition.x,
+            truckBodyPosition.z,
+          );
           // console.log("Distance:", distance);
           // console.log("Distance to truck surface:", distance);
 
