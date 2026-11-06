@@ -15,7 +15,10 @@ const loadingPageData = [
   "Hydrating the virtual DOM",
 ];
 
-export default function LoadingPage() {
+export default function LoadingPage({
+  isComplete = false,
+  isFadingOut = false,
+}) {
   const messageTrackRef = useRef(null);
   const progressRef = useRef(null);
   const canvasRef = useRef(null);
@@ -49,14 +52,6 @@ export default function LoadingPage() {
     // =========================================
     // PROGRESS BAR ANIMATION
     // =========================================
-
-    const progressTimeline = gsap.timeline();
-
-    progressTimeline.to(progressRef.current, {
-      width: "100%",
-      duration: 10,
-      ease: "none",
-    });
 
     // =========================================
     // THREE.JS FBX CHARACTER
@@ -242,7 +237,6 @@ export default function LoadingPage() {
 
     return () => {
       messageTimeline.kill();
-      progressTimeline.kill();
 
       window.removeEventListener("resize", handleResize);
 
@@ -275,9 +269,37 @@ export default function LoadingPage() {
       }
     };
   }, []);
+  useEffect(() => {
+    if (!progressRef.current) return;
+
+    if (isComplete) {
+      gsap.to(progressRef.current, {
+        width: "100%",
+        duration: 0.5,
+        ease: "power2.out",
+      });
+
+      return;
+    }
+
+    gsap.set(progressRef.current, {
+      width: "0%",
+    });
+
+    const progressTween = gsap.to(progressRef.current, {
+      width: "90%",
+      duration: 7,
+      ease: "none",
+    });
+
+    return () => {
+      progressTween.kill();
+      gsap.killTweensOf(progressRef.current);
+    };
+  }, [isComplete]);
 
   return (
-    <div className="loadingpage">
+    <div className={`loadingpage ${isFadingOut ? "loadingpage-fade-out" : ""}`}>
       {/* BACKGROUND DEPTH ELEMENTS */}
 
       <div className="loading-bg-glow"></div>

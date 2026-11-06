@@ -1,0 +1,41 @@
+.portfolio-root {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* Three.js scene starts dark */
+
+.scene-reveal {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  filter: brightness(0.12) saturate(0.4);
+
+  transition: filter 1.5s ease;
+}
+
+.scene-reveal-ready {
+  filter: brightness(1) saturate(1);
+}
+
+/* Other portfolio components */
+
+.portfolio-ui {
+  position: relative;
+  z-index: 10;
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.8s ease;
+}
+
+.portfolio-ui-ready {
+  opacity: 1;
+  pointer-events: auto;
+}

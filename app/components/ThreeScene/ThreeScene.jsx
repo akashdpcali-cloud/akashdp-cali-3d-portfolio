@@ -27,6 +27,7 @@ export default function ThreeScene({
   onPostBoxClick,
   onUfcBeltClick,
   teleportTarget,
+  onSceneReady,
 }) {
   //Charecter
   const mountRef = useRef(null);
@@ -157,7 +158,11 @@ export default function ThreeScene({
 
     characterRef.current.updateMatrixWorld(true);
 
-    if (isDrivingRef.current && truckRef.current && teleportTarget.truckTarget) {
+    if (
+      isDrivingRef.current &&
+      truckRef.current &&
+      teleportTarget.truckTarget
+    ) {
       const truck = truckRef.current;
       truck.updateWorldMatrix(true, true);
 
@@ -513,8 +518,20 @@ export default function ThreeScene({
 
     let disposed = false;
 
+    const loadingManager = new THREE.LoadingManager();
+
+    loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+      console.log(`Loading assets: ${itemsLoaded}/${itemsTotal}`);
+    };
+
+    loadingManager.onLoad = () => {
+      console.log("All 5 assets loaded");
+
+      onSceneReady?.();
+    };
+
     // Load the monster truck.
-    const truckLoader = new GLTFLoader();
+    const truckLoader = new GLTFLoader(loadingManager);
 
     truckLoader.load(
       "/models/truck/truck.glb",
@@ -651,13 +668,14 @@ export default function ThreeScene({
     );
 
     // Load the low-poly world.
-    const worldLoader = new GLTFLoader();
-    const dracoLoader = new DRACOLoader();
+
+    const dracoLoader = new DRACOLoader(loadingManager);
 
     dracoLoader.setDecoderPath(
       "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
     );
 
+    const worldLoader = new GLTFLoader(loadingManager);
     worldLoader.setDRACOLoader(dracoLoader);
     worldLoader.load(
       "/models/world/lowpoly_world.glb",
@@ -1492,7 +1510,7 @@ export default function ThreeScene({
       },
     );
 
-    const loader = new FBXLoader();
+    const loader = new FBXLoader(loadingManager);
     loaderRef.current = loader;
 
     const clock = new THREE.Clock();
@@ -2282,7 +2300,6 @@ export default function ThreeScene({
 
     // console.log("Loading character:", selectedCharacter.name);
     // console.log("Model path:", selectedCharacter.idle);
-
     loader.load(
       selectedCharacter.idle,
       (fbx) => {
