@@ -275,6 +275,36 @@ export default function ThreeScene({
 
     cameraRef.current = camera;
 
+    const speedLineCount = 24;
+    const speedLineGeometry = new THREE.BufferGeometry();
+    speedLineGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(speedLineCount * 2 * 3), 3),
+    );
+    const speedLineMaterial = new THREE.LineBasicMaterial({
+      color: 0xd9f4ff,
+      transparent: true,
+      opacity: 0.7,
+      depthTest: false,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    const speedLines = new THREE.LineSegments(
+      speedLineGeometry,
+      speedLineMaterial,
+    );
+    speedLines.visible = false;
+    speedLines.renderOrder = 10;
+    speedLines.frustumCulled = false;
+    scene.add(speedLines);
+
+    const speedLineDetails = Array.from({ length: speedLineCount }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      progress: Math.random(),
+      speed: 0.35 + Math.random() * 0.55,
+    }));
+    let speedLineTime = 0;
+
     // Renderer
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -2129,6 +2159,61 @@ export default function ThreeScene({
         camera.lookAt(lookAtPosition);
       }
 
+      const speedLinesActive =
+        Boolean(character) &&
+        !isDrivingRef.current &&
+        (runningRef.current || isRunningRef.current) &&
+        isMoving;
+      speedLines.visible = speedLinesActive;
+
+      if (speedLinesActive) {
+        speedLineTime += delta * 1.8;
+        speedLines.position.copy(camera.position);
+        speedLines.quaternion.copy(camera.quaternion);
+
+        const depth = 5;
+        const halfHeight =
+          depth * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const halfWidth = halfHeight * camera.aspect;
+        const positions = speedLineGeometry.attributes.position;
+
+        speedLineDetails.forEach((line, index) => {
+          line.progress += delta * line.speed;
+
+          if (line.progress >= 1) {
+            line.angle = Math.random() * Math.PI * 2;
+            line.progress = Math.random() * 0.08;
+            line.speed = 0.35 + Math.random() * 0.55;
+          }
+
+          const progress = line.progress;
+          const innerRadius = 0.62 + progress * 0.28;
+          const cosAngle = Math.cos(line.angle);
+          const sinAngle = Math.sin(line.angle);
+          const edgeRadius = Math.min(
+            1 / Math.abs(cosAngle),
+            1 / Math.abs(sinAngle),
+          );
+          const outerRadius = edgeRadius * 1.02;
+
+          positions.setXYZ(
+            index * 2,
+            cosAngle * innerRadius * halfWidth,
+            sinAngle * innerRadius * halfHeight,
+            -depth,
+          );
+          positions.setXYZ(
+            index * 2 + 1,
+            cosAngle * outerRadius * halfWidth,
+            sinAngle * outerRadius * halfHeight,
+            -depth,
+          );
+        });
+
+        positions.needsUpdate = true;
+        speedLineMaterial.opacity = 0.55 + Math.sin(speedLineTime * 5) * 0.12;
+      }
+
       if (mixerRef.current) {
         mixerRef.current.update(delta);
       }
@@ -2306,6 +2391,9 @@ export default function ThreeScene({
       scene.remove(ground);
       ground.geometry.dispose();
       ground.material.dispose();
+      scene.remove(speedLines);
+      speedLineGeometry.dispose();
+      speedLineMaterial.dispose();
 
       renderer.dispose();
 
