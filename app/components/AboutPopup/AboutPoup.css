@@ -39,6 +39,7 @@
 .about-popup-title {
   font-size: 20px;
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 /* CLOSE BUTTON */
@@ -94,6 +95,7 @@
 
   cursor: pointer;
   transition: color 0.2s ease;
+  text-transform: capitalize;
 }
 
 .about-popup-tab:hover {
@@ -140,6 +142,7 @@
 .about-popup-summary-section-div p {
   margin: 0;
   white-space: pre-line;
+  font-family: "Roboto";
 }
 
 /* CONTACT SECTION */
@@ -212,12 +215,13 @@
   font-size: 16px;
   font-weight: 700;
   color: #222;
-  text-transform: capitalize;
+  text-transform: uppercase;
 }
 
 .about-popup-contact-subtitle {
   font-size: 13px;
   color: #777;
+  font-family: "Roboto";
 }
 
 /* TABLET */

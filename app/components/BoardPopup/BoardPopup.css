@@ -36,11 +36,11 @@
   flex-shrink: 0;
 }
 
-.map-popup-title {
+.boardpopup-title {
   font-size: clamp(18px, 3vw, 23px);
   font-weight: 800;
   letter-spacing: 0.3px;
-
+  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
@@ -90,6 +90,7 @@
 
   scrollbar-width: thin;
   scrollbar-color: rgb(255, 30, 0) #e2e8f0;
+  font-family: "Roboto";
 }
 
 /* Chrome, Edge, Safari scrollbar */
@@ -125,6 +126,7 @@
 
   background: rgb(255, 30, 0);
   color: #f4f7fb;
+  text-transform: uppercase;
 
   font-size: 14px;
   font-weight: 700;
