@@ -939,6 +939,7 @@ export default function ThreeScene({
           const animalNames = [
             ...Array.from({ length: 11 }, (_, i) => `sheep${i + 1}`),
             ...Array.from({ length: 11 }, (_, i) => `cow${i + 1}`),
+            "knight",
           ];
 
           animalObjectsRef.current = animalNames
@@ -946,8 +947,10 @@ export default function ThreeScene({
             .filter(Boolean);
           const sheepAudio = new Audio("/audio/sheep.mp3");
           const cowAudio = new Audio("/audio/cow.mp3");
+          const horseAudio = new Audio("/audio/horse.mp3");
           sheepAudio.volume = 0.7;
           cowAudio.volume = 0.2;
+          horseAudio.volume = 0.5;
 
           const handleAnimalPointerMove = (event) => {
             const rect = renderer.domElement.getBoundingClientRect();
@@ -1030,7 +1033,9 @@ export default function ThreeScene({
               ? sheepAudio
               : animal.name.startsWith("cow")
                 ? cowAudio
-                : null;
+                : animal.name === "knight"
+                  ? horseAudio
+                  : null;
 
             if (animalAudio) {
               animalAudio.currentTime = 0;
