@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 
 export default function usePopupAnimation(isOpen = true) {
@@ -6,6 +6,9 @@ export default function usePopupAnimation(isOpen = true) {
 
   useLayoutEffect(() => {
     if (!isOpen || !popupRef.current) return;
+    const popSound = new Audio("/audio/pop.mp3");
+    popSound.volume = 0.5;
+    popSound.play().catch(() => {});
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();

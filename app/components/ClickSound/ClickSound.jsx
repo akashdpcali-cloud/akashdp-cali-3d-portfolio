@@ -3,7 +3,7 @@ import { useEffect } from "react";
 export default function ClickSound() {
   useEffect(() => {
     const clickAudio = new Audio("/audio/click.mp3");
-    clickAudio.volume = 0.1;
+    clickAudio.volume = 0.5;
 
     const handleClick = (event) => {
       if (event.target.closest("button")) {
