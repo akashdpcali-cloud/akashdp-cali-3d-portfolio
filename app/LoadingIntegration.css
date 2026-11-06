@@ -14,13 +14,13 @@
   width: 100%;
   height: 100%;
 
-  filter: brightness(0.12) saturate(0.4);
+  filter: brightness(0);
 
-  transition: filter 1.5s ease;
+  transition: filter 5s ease;
 }
 
 .scene-reveal-ready {
-  filter: brightness(1) saturate(1);
+  filter: brightness(1);
 }
 
 /* Other portfolio components */

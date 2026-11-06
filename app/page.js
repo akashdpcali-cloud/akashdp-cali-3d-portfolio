@@ -31,7 +31,6 @@ export default function Home() {
   const [isMinimumTimeElapsed, setIsMinimumTimeElapsed] = useState(false);
 
   const [isLoadingVisible, setIsLoadingVisible] = useState(true);
-  const [isFadingOut, setIsFadingOut] = useState(false);
 
   const isAppReady = isSceneReady && isMinimumTimeElapsed;
 
@@ -43,7 +42,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsMinimumTimeElapsed(true);
-    }, 7000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -52,11 +51,9 @@ export default function Home() {
   useEffect(() => {
     if (!isAppReady) return;
 
-    setIsFadingOut(true);
-
     const timer = setTimeout(() => {
       setIsLoadingVisible(false);
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [isAppReady]);
@@ -205,7 +202,7 @@ export default function Home() {
       ===================================== */}
 
       {isLoadingVisible && (
-        <LoadingPage isComplete={isAppReady} isFadingOut={isFadingOut} />
+        <LoadingPage isComplete={isAppReady} isFadingOut={isAppReady} />
       )}
     </main>
   );
