@@ -102,12 +102,12 @@ export const Props = {
     "Js",
     "SQLite",
     "Vite",
-    "MUUUUU",
-    "MUUUUU",
-    "MUUUUU",
-    "MUUUUU",
-    "MUUUUU",
-    "MUUUUU",
+    "React.js", // repeat
+    "Three.js",
+    "GSAP",
+    "Blender",
+    "Node.js",
+    "Express.js",
   ],
   truck: "Click to Drive",
   knight:
