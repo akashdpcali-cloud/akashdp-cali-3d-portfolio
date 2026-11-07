@@ -21,6 +21,7 @@ import AboutPopup from "./components/AboutPopup/AboutPopup";
 import MapTrigger from "./components/MapTrigger/MapTrigger";
 import MapPopup from "./components/MapPopup/MapPopup";
 import LoadingPage from "./components/LoadingPage/LoadingPage";
+import FullscreenButton from "./components/FullscreenButton/FullscreenButton";
 
 export default function Home() {
   // =========================================
@@ -110,6 +111,7 @@ export default function Home() {
       ===================================== */}
 
       <div className={`portfolio-ui ${isAppReady ? "portfolio-ui-ready" : ""}`}>
+        <FullscreenButton />
         <InstructionPopup />
 
         <BGMController />
