@@ -112,6 +112,6 @@
 
 /* Change these values to reposition the AI button on phones in landscape fullscreen. */
 .phone-landscape-fullscreen .ai-bot-starter-button {
-  right: 20px;
-  bottom: 100px;
+  right: 10px;
+  bottom: 150px;
 }
