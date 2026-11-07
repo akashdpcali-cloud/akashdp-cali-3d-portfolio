@@ -3,7 +3,7 @@
   top: 20px;
   left: 20px;
   z-index: 1000;
-  display: none;
+  display: block;
 }
 
 .fullscreen-button {
@@ -62,8 +62,8 @@
     sans-serif;
 }
 
-@media (max-width: 500px) {
+/* @media (max-width: 500px) {
   .fullscreen-control {
     display: block;
   }
-}
+} */

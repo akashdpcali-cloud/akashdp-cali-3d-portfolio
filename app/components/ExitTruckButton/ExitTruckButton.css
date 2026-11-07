@@ -38,3 +38,9 @@
     height: 65px;
   }
 }
+
+/* Change these values to reposition the exit button on phones in landscape fullscreen. */
+.phone-landscape-fullscreen .exit-truck-button {
+  bottom: 20px;
+  right: 30px;
+}

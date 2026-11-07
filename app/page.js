@@ -74,15 +74,66 @@ export default function Home() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isPhoneLandscapeFullscreen, setIsPhoneLandscapeFullscreen] =
+    useState(false);
 
   const [mapTarget, setMapTarget] = useState(null);
+
+  useEffect(() => {
+    const landscapeQuery = window.matchMedia("(orientation: landscape)");
+    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
+
+    const updatePhoneLandscapeFullscreen = () => {
+      const shortestScreenSide = Math.min(
+        window.screen.width,
+        window.screen.height,
+      );
+
+      setIsPhoneLandscapeFullscreen(
+        shortestScreenSide <= 780 &&
+          coarsePointerQuery.matches &&
+          landscapeQuery.matches &&
+          Boolean(document.fullscreenElement),
+      );
+    };
+
+    window.addEventListener("resize", updatePhoneLandscapeFullscreen);
+    window.addEventListener("orientationchange", updatePhoneLandscapeFullscreen);
+    document.addEventListener(
+      "fullscreenchange",
+      updatePhoneLandscapeFullscreen,
+    );
+    landscapeQuery.addEventListener("change", updatePhoneLandscapeFullscreen);
+
+    updatePhoneLandscapeFullscreen();
+
+    return () => {
+      window.removeEventListener("resize", updatePhoneLandscapeFullscreen);
+      window.removeEventListener(
+        "orientationchange",
+        updatePhoneLandscapeFullscreen,
+      );
+      document.removeEventListener(
+        "fullscreenchange",
+        updatePhoneLandscapeFullscreen,
+      );
+      landscapeQuery.removeEventListener(
+        "change",
+        updatePhoneLandscapeFullscreen,
+      );
+    };
+  }, []);
 
   // =========================================
   // RENDER
   // =========================================
 
   return (
-    <main className="portfolio-root">
+    <main
+      className={`portfolio-root ${
+        isPhoneLandscapeFullscreen ? "phone-landscape-fullscreen" : ""
+      }`}
+    >
       {/* =====================================
           THREE.JS SCENE
           Starts dark and reveals when ready
