@@ -44,13 +44,12 @@ const portfolioData = {
       "groq api",
       "resend for mail",
     ],
-
-    mini_projects: [
-      "fullstack image to 3d wed app",
-      "fullstack ecommerce website",
-      "fullstack to do list web app",
-    ],
   },
+  mini_projects: [
+    "fullstack image to 3d wed app",
+    "fullstack ecommerce website",
+    "fullstack to do list web app",
+  ],
 };
 
 export default portfolioData;
@@ -87,11 +86,12 @@ export const portfolioBGM = [
 
 //INSTRUCTIONS
 export const instructionPopupData = [
+  "Open in desktop for better experience.",
   "Character Movement: keys(W A S D ) or the virtual joystick.",
-  "360° View: Left click + Drag to look around",
+  "360° View: Left click + Drag to look around.",
   "Please refer to the map for optimal navigation.",
-  "Switch to your preferred character",
-  "Explore and Interact with the environment to discover my craft",
+  "Switch to your preferred character.",
+  "Explore and Interact with the environment to discover my craft.",
 ];
 
 //PROPS
