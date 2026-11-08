@@ -8,7 +8,7 @@ export const metadata = {
     template: "%s | Akash D P",
   },
 
-  metadataBase: new URL("https://akashdp-cali-3d-portfolio.vercel.app"),
+  metadataBase: new URL("https://akashdp.dev"),
 
   alternates: {
     canonical: "/",

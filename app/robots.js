@@ -1,4 +1,4 @@
-const SITE_URL = "https://akashdp-cali-3d-portfolio.vercel.app";
+const SITE_URL = "https://akashdp.dev";
 
 export default function robots() {
   return {
