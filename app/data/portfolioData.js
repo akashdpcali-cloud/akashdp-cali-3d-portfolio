@@ -1,10 +1,8 @@
-import { exp } from "three/tsl";
-
 // CHATBOT CONTETN
 const portfolioData = {
   personal: {
     name: "Akash D P",
-    role: "Full-Stack Developer",
+    role: "3D Full-Stack Developer & Creative Developer",
     description:
       "Akash D P is a full-stack developer who builds interactive web experiences and modern web applications.",
   },
@@ -162,4 +160,22 @@ export const AboutmePopupSocial = {
   linkedin: "https://www.linkedin.com/in/akashdpcali/",
   github: "https://github.com/akashdpcali-cloud",
   gmail: "akashdpcali@gmail.com",
+};
+
+// SEO SEARCH ENGINE OPTIMIZATION
+
+export const skills = {
+  frontend: ["HTML", "CSS", "JavaScript", "React.js", "Next.js"],
+
+  threeD: ["Three.js", "Blender"],
+
+  animation: ["GSAP"],
+
+  backend: ["Node.js", "Express.js"],
+
+  databases: ["PostgreSQL", "SQLite", "Prisma ORM"],
+
+  realtime: ["Socket.IO"],
+
+  ai: ["AI Integration"],
 };
