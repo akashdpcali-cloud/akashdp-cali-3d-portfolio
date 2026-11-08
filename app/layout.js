@@ -1,6 +1,7 @@
 import "./globals.css";
 import localFont from "next/font/local";
 import { Roboto } from "next/font/google";
+import Script from "next/script";
 
 export const metadata = {
   title: {
@@ -151,6 +152,20 @@ export default function RootLayout({ children }) {
             __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c"),
           }}
         />
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-5KZ7XLPZ6P"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){window.dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5KZ7XLPZ6P');
+  `}
+        </Script>
         {children}
       </body>
     </html>
