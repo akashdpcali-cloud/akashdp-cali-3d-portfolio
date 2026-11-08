@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 
 import { characters } from "./data/portfolioData";
 import "./LoadingIntegration.css";
 
-import ThreeScene from "./components/ThreeScene/ThreeScene";
 import BGMController from "./components/BGMController/BGMController";
 import ClickSound from "./components/ClickSound/ClickSound";
 import Joystick from "./components/Joystick/Joystick";
 import InstructionPopup from "./components/InstructionPopup/InstructionPopup";
 import AiTrigger from "./components/AiTrigger/AiTrigger";
-import AiChatSection from "./components/AiChatSection/AiChatSection";
 import CharacterFrontend from "./components/CharacterFrontend/CharacterFrontend";
 import RunButton from "./components/RunButton/RunButton";
 import ExitTruckButton from "./components/ExitTruckButton/ExitTruckButton";
@@ -22,6 +21,15 @@ import MapTrigger from "./components/MapTrigger/MapTrigger";
 import MapPopup from "./components/MapPopup/MapPopup";
 import LoadingPage from "./components/LoadingPage/LoadingPage";
 import FullscreenButton from "./components/FullscreenButton/FullscreenButton";
+
+const ThreeScene = dynamic(
+  () => import("./components/ThreeScene/ThreeScene"),
+  { ssr: false },
+);
+const AiChatSection = dynamic(
+  () => import("./components/AiChatSection/AiChatSection"),
+  { ssr: false },
+);
 
 export default function Home() {
   // =========================================
@@ -64,6 +72,7 @@ export default function Home() {
   // =========================================
 
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [hasOpenedAiChat, setHasOpenedAiChat] = useState(false);
 
   const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
 
@@ -184,12 +193,19 @@ export default function Home() {
           }}
         />
 
-        <AiTrigger onClick={() => setIsAiChatOpen(true)} />
-
-        <AiChatSection
-          isOpen={isAiChatOpen}
-          onClose={() => setIsAiChatOpen(false)}
+        <AiTrigger
+          onClick={() => {
+            setHasOpenedAiChat(true);
+            setIsAiChatOpen(true);
+          }}
         />
+
+        {hasOpenedAiChat && (
+          <AiChatSection
+            isOpen={isAiChatOpen}
+            onClose={() => setIsAiChatOpen(false)}
+          />
+        )}
 
         {isDriving ? (
           <ExitTruckButton

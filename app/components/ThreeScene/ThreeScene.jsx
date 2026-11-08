@@ -243,19 +243,6 @@ export default function ThreeScene({
 
   // Initialize the Three.js scene only once.
   useEffect(() => {
-    const debugMovement = (event) => {
-      const key = event.key.toLowerCase();
-
-      if (!["w", "a", "s", "d"].includes(key)) return;
-
-      // console.log("Key pressed:", key.toUpperCase(), {
-      //   cameraForward: cameraForwardRef.current.toArray(),
-      //   cameraRight: cameraRightRef.current.toArray(),
-      // });
-    };
-
-    window.addEventListener("keydown", debugMovement);
-
     const mount = mountRef.current;
     if (!mount) return;
 
@@ -348,7 +335,7 @@ export default function ThreeScene({
     const width = mount.clientWidth;
     const height = mount.clientHeight;
 
-    const pixelRatio = Math.min(window.devicePixelRatio, 2);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(width, height);
@@ -391,10 +378,6 @@ export default function ThreeScene({
     // Output Pass
     const outputPass = new OutputPass();
     composer.addPass(outputPass);
-
-    renderer.setSize(mount.clientWidth, mount.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
 
     canvas.style.touchAction = "none";
 
@@ -583,7 +566,7 @@ export default function ThreeScene({
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(10, 20, 10);
     directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.set(3000, 3000);
+    directionalLight.shadow.mapSize.set(2048, 2048);
     directionalLight.shadow.bias = 0.0001;
     directionalLight.shadow.normalBias = 0.04;
     directionalLight.shadow.radius = 2;
@@ -635,13 +618,7 @@ export default function ThreeScene({
 
     const loadingManager = new THREE.LoadingManager();
 
-    loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-      console.log(`Loading assets: ${itemsLoaded}/${itemsTotal}`);
-    };
-
     loadingManager.onLoad = () => {
-      console.log("All 5 assets loaded");
-
       onSceneReady?.();
     };
 
@@ -654,15 +631,6 @@ export default function ThreeScene({
         if (disposed || sceneRef.current !== scene) return;
 
         const truck = gltf.scene;
-
-        truck.traverse((child) => {
-          // console.log(
-          //   "Truck object:",
-          //   child.name,
-          //   "World position:",
-          //   child.getWorldPosition(new THREE.Vector3()),
-          // );
-        });
 
         const truckBody = truck.getObjectByName("truck_body");
 
@@ -810,12 +778,6 @@ export default function ThreeScene({
         // console.log("World loaded");
         // console.log("walls object:", world.getObjectByName("walls"));
         // console.log("knight object:", world.getObjectByName("knight"));
-
-        world.traverse((object) => {
-          if (object.name.toLowerCase().includes("knight")) {
-            // console.log("Knight-like object:", object.name, object.type);
-          }
-        });
 
         const walls = world.getObjectByName("walls");
 
@@ -1657,13 +1619,19 @@ export default function ThreeScene({
     loaderRef.current = loader;
 
     const clock = new THREE.Clock();
+    const proximityCharacterPosition = new THREE.Vector3();
+    const proximityClosestPoint = new THREE.Vector3();
+    const proximityBodyBounds = new THREE.Box3();
 
     function animate() {
-      if (disposed) return;
+      if (disposed || document.hidden) {
+        requestRef.current = null;
+        return;
+      }
 
       requestRef.current = requestAnimationFrame(animate);
 
-      const delta = clock.getDelta();
+      const delta = Math.min(clock.getDelta(), 0.05);
       const character = characterRef.current;
       const truck = truckRef.current;
       const prompt = drivePromptRef.current;
@@ -1700,47 +1668,19 @@ export default function ThreeScene({
 
       if (character && truck && prompt && !isDrivingRef.current) {
         const truckBody = truck.getObjectByName("truck_body");
-        const box = new THREE.Box3().setFromObject(truckBody);
-
-        // console.log("Truck body bounds:", {
-        //   min: box.min.toArray(),
-        //   max: box.max.toArray(),
-        //   center: box.getCenter(new THREE.Vector3()).toArray(),
-        //   size: box.getSize(new THREE.Vector3()).toArray(),
-        // });
-        // console.log("Truck body found:", !!truckBody);
 
         if (truckBody) {
-          const characterPosition = new THREE.Vector3();
-          const truckBodyPosition = new THREE.Vector3();
+          character.getWorldPosition(proximityCharacterPosition);
 
-          character.getWorldPosition(characterPosition);
-          truckBody.getWorldPosition(truckBodyPosition);
-
-          // console.log("Character world position:", characterPosition);
-          // console.log("Truck body world position:", truckBodyPosition);
-
-          const bodyBox = new THREE.Box3().setFromObject(truckBody);
-
-          const closestPoint = new THREE.Vector3();
-          bodyBox.clampPoint(characterPosition, closestPoint);
-
-          const distance = characterPosition.distanceTo(closestPoint);
-          // console.log(
-          //   "Character X/Z:",
-          //   characterPosition.x,
-          //   characterPosition.z,
-          // );
-          console.log(
-            "Truck body X/Z:",
-            truckBodyPosition.x,
-            truckBodyPosition.z,
-          );
-          // console.log("Distance:", distance);
-          // console.log("Distance to truck surface:", distance);
+          const distance = proximityBodyBounds
+            .setFromObject(truckBody)
+            .clampPoint(
+              proximityCharacterPosition,
+              proximityClosestPoint,
+            )
+            .distanceTo(proximityCharacterPosition);
 
           prompt.visible = distance <= 5;
-          // console.log("Prompt visible after update:", prompt.visible);
         }
       }
 
@@ -2461,6 +2401,7 @@ export default function ThreeScene({
       shadowCamera.far = shadowLightOffset.length() + shadowViewDistance * 2;
       shadowCamera.updateProjectionMatrix();
 
+      outlinePass.enabled = outlinePass.selectedObjects.length > 0;
       composer.render();
     }
     animate();
@@ -2471,7 +2412,7 @@ export default function ThreeScene({
 
       if (!width || !height) return;
 
-      const pixelRatio = Math.min(window.devicePixelRatio, 2);
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -2484,6 +2425,21 @@ export default function ThreeScene({
     }
 
     window.addEventListener("resize", handleResize);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(requestRef.current);
+        requestRef.current = null;
+        return;
+      }
+
+      if (requestRef.current === null && !disposed) {
+        clock.start();
+        requestRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const handleKeyDown = (event) => {
       const key = event.key.toLowerCase();
@@ -2532,12 +2488,15 @@ export default function ThreeScene({
       knightLabelRef.current = null;
       conorLabelRef.current = null;
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
 
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("joystickMove", handleJoystickMove);
       window.removeEventListener("exitTruck", handleExitTruck);
-      window.removeEventListener("keydown", debugMovement);
 
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointermove", handlePointerMove);
@@ -2572,6 +2531,8 @@ export default function ThreeScene({
       truckSpeedLineGeometry.dispose();
       truckSpeedLineMaterial.dispose();
 
+      composer.dispose();
+      outlinePass.dispose();
       renderer.dispose();
 
       if (renderer.domElement.parentNode === mount) {

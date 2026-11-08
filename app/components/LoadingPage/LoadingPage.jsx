@@ -78,7 +78,7 @@ export default function LoadingPage({
       antialias: true,
     });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
     renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -218,9 +218,14 @@ export default function LoadingPage({
     // =========================================
 
     const animate = () => {
+      if (document.hidden) {
+        animationFrameId = null;
+        return;
+      }
+
       animationFrameId = requestAnimationFrame(animate);
 
-      const delta = clock.getDelta();
+      const delta = Math.min(clock.getDelta(), 0.05);
 
       if (mixer) {
         mixer.update(delta);
@@ -229,6 +234,20 @@ export default function LoadingPage({
       renderer.render(scene, camera);
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+        return;
+      }
+
+      if (animationFrameId === null) {
+        clock.start();
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     animate();
 
     // =========================================
@@ -239,6 +258,10 @@ export default function LoadingPage({
       messageTimeline.kill();
 
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
 
       cancelAnimationFrame(animationFrameId);
 
