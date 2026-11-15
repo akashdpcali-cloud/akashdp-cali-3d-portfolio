@@ -411,7 +411,7 @@ export default function ThreeScene({
       orbit.lastX = event.clientX;
       orbit.lastY = event.clientY;
 
-      orbit.yaw -= deltaX * 0.005;
+      orbit.yaw += deltaX * 0.005;
       orbit.pitch += deltaY * 0.005;
 
       orbit.pitch = THREE.MathUtils.clamp(orbit.pitch, 0.05, 1.45);
