@@ -144,6 +144,8 @@ export default function ThreeScene({
   //feedback popup
 
   const postBoxRef = useRef(null);
+  const postBoxLabelRef = useRef(null);
+  const postBoxPositionRef = useRef(new THREE.Vector3());
   const hoveredPostBoxRef = useRef(null);
 
   // ufc belt
@@ -1304,6 +1306,48 @@ export default function ThreeScene({
           postBoxRef.current.userData.originalScale =
             postBoxRef.current.scale.clone();
 
+          postBoxRef.current.updateWorldMatrix(true, true);
+          const postBoxBounds = new THREE.Box3().setFromObject(
+            postBoxRef.current,
+          );
+          const postBoxCenter = postBoxBounds.getCenter(new THREE.Vector3());
+          postBoxPositionRef.current.copy(postBoxCenter);
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 512;
+          canvas.height = 128;
+
+          const context = canvas.getContext("2d");
+          context.fillStyle = "rgba(15, 23, 42, 0.9)";
+          context.beginPath();
+          context.roundRect(10, 10, 492, 108, 24);
+          context.fill();
+
+          context.fillStyle = "#ffffff";
+          context.font = "bold 42px Arial";
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText("Send Feedback", 256, 64);
+
+          const texture = new THREE.CanvasTexture(canvas);
+          const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            depthTest: false,
+          });
+
+          const label = new THREE.Sprite(material);
+          label.scale.set(4, 1, 1);
+          label.position.set(
+            postBoxCenter.x,
+            postBoxBounds.max.y + 1,
+            postBoxCenter.z,
+          );
+          label.visible = false;
+
+          scene.add(label);
+          postBoxLabelRef.current = label;
+
           // console.log("Post box found:", postBoxRef.current);
         } else {
           console.warn("post_box not found in the world");
@@ -2107,6 +2151,14 @@ export default function ThreeScene({
           );
           conorLabelRef.current.visible = distance <= 4;
         }
+        if (postBoxLabelRef.current) {
+          const postBoxPosition = postBoxPositionRef.current;
+          const distance = Math.hypot(
+            targetPosition.x - postBoxPosition.x,
+            targetPosition.z - postBoxPosition.z,
+          );
+          postBoxLabelRef.current.visible = distance <= 10;
+        }
         for (const { label, position } of animalLabelsRef.current) {
           const distance = Math.hypot(
             targetPosition.x - position.x,
@@ -2118,6 +2170,9 @@ export default function ThreeScene({
       } else {
         if (knightLabelRef.current) knightLabelRef.current.visible = false;
         if (conorLabelRef.current) conorLabelRef.current.visible = false;
+        if (postBoxLabelRef.current) {
+          postBoxLabelRef.current.visible = false;
+        }
         for (const { label } of animalLabelsRef.current) {
           label.visible = false;
         }
@@ -2519,6 +2574,13 @@ export default function ThreeScene({
         scene.remove(characterRef.current);
         disposeCharacter(characterRef.current);
         characterRef.current = null;
+      }
+
+      if (postBoxLabelRef.current) {
+        scene.remove(postBoxLabelRef.current);
+        postBoxLabelRef.current.material.map?.dispose();
+        postBoxLabelRef.current.material.dispose();
+        postBoxLabelRef.current = null;
       }
 
       scene.remove(ground);
