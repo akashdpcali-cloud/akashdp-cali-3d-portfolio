@@ -49,6 +49,33 @@ function updatePopupAnimation(sprite, shouldShow, delta) {
   sprite.visible = shouldShow || nextProgress > 0;
 }
 
+function updateHoverScale(object, isHovered, multiplier, delta) {
+  if (!object?.userData.originalScale) return;
+
+  if (typeof object.userData.hoverScaleProgress !== "number") {
+    object.userData.hoverScaleProgress = 0;
+    object.userData.hoverScaleVelocity = 0;
+  }
+
+  const target = isHovered ? 1 : 0;
+  let progress = object.userData.hoverScaleProgress;
+  let velocity = object.userData.hoverScaleVelocity;
+
+  velocity += ((target - progress) * 180 - velocity * 24) * delta;
+  progress += velocity * delta;
+
+  if (Math.abs(target - progress) < 0.001 && Math.abs(velocity) < 0.01) {
+    progress = target;
+    velocity = 0;
+  }
+
+  object.userData.hoverScaleProgress = progress;
+  object.userData.hoverScaleVelocity = velocity;
+  object.scale
+    .copy(object.userData.originalScale)
+    .multiplyScalar(1 + (multiplier - 1) * progress);
+}
+
 export default function ThreeScene({
   selectedCharacter,
   isRunning,
@@ -1236,20 +1263,7 @@ export default function ThreeScene({
 
           // Restore the previously hovered computer
           if (hoveredComputerRef.current !== foundComputer) {
-            if (hoveredComputerRef.current) {
-              const previous = hoveredComputerRef.current;
-
-              previous.scale.copy(previous.userData.originalScale);
-            }
-
             hoveredComputerRef.current = foundComputer;
-
-            // Highlight the newly hovered computer
-            if (foundComputer) {
-              foundComputer.scale
-                .copy(foundComputer.userData.originalScale)
-                .multiplyScalar(1.5);
-            }
 
             // Keep both computer and post_box outlines
             outlinePass.selectedObjects = [
@@ -1407,19 +1421,6 @@ export default function ThreeScene({
 
           hoveredPostBoxRef.current = isHovering ? postBoxRef.current : null;
 
-          // Scale animation
-          if (isHovering) {
-            postBoxRef.current.scale.set(
-              postBoxRef.current.userData.originalScale.x * 1.12,
-              postBoxRef.current.userData.originalScale.y * 1.12,
-              postBoxRef.current.userData.originalScale.z * 1.12,
-            );
-          } else {
-            postBoxRef.current.scale.copy(
-              postBoxRef.current.userData.originalScale,
-            );
-          }
-
           // Yellow outline
           outlinePass.selectedObjects = [
             ...(hoveredComputerRef.current ? [hoveredComputerRef.current] : []),
@@ -1501,16 +1502,6 @@ export default function ThreeScene({
           const isHovering = intersections.length > 0;
 
           hoveredUfcBeltRef.current = isHovering ? ufcBeltRef.current : null;
-
-          if (isHovering) {
-            ufcBeltRef.current.scale
-              .copy(ufcBeltRef.current.userData.originalScale)
-              .multiplyScalar(1.5);
-          } else {
-            ufcBeltRef.current.scale.copy(
-              ufcBeltRef.current.userData.originalScale,
-            );
-          }
 
           // Preserve outlines from other interactive objects
           outlinePass.selectedObjects = [
@@ -1760,6 +1751,27 @@ export default function ThreeScene({
         }
       }
       updatePopupAnimation(prompt, shouldShowDrivePrompt, delta);
+
+      for (const computer of computerObjectsRef.current) {
+        updateHoverScale(
+          computer,
+          computer === hoveredComputerRef.current,
+          1.5,
+          delta,
+        );
+      }
+      updateHoverScale(
+        postBoxRef.current,
+        postBoxRef.current === hoveredPostBoxRef.current,
+        1.12,
+        delta,
+      );
+      updateHoverScale(
+        ufcBeltRef.current,
+        ufcBeltRef.current === hoveredUfcBeltRef.current,
+        1.5,
+        delta,
+      );
 
       if (character && !isDrivingRef.current) {
         const keys = keysRef.current;
