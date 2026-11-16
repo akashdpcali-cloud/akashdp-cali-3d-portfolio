@@ -18,6 +18,37 @@ import { BoardPopupData } from "@/app/data/portfolioData";
 import InfiniteGround from "./InfiniteGround";
 import "./ThreeScene.css";
 
+function updatePopupAnimation(sprite, shouldShow, delta) {
+  if (!sprite) return;
+
+  if (typeof sprite.userData.popupProgress !== "number") {
+    sprite.userData.popupProgress = 0;
+    sprite.userData.popupPosition = sprite.position.clone();
+    sprite.userData.popupScale = sprite.scale.clone();
+    sprite.userData.popupOpacity = sprite.material.opacity;
+  }
+
+  const progress = sprite.userData.popupProgress;
+  sprite.userData.popupProgress = shouldShow
+    ? Math.min(1, progress + delta * 3.5)
+    : Math.max(0, progress - delta * 3.5);
+
+  const nextProgress = sprite.userData.popupProgress;
+  const easedProgress =
+    1 +
+    2.70158 * Math.pow(nextProgress - 1, 3) +
+    1.70158 * Math.pow(nextProgress - 1, 2);
+
+  sprite.position.y =
+    sprite.userData.popupPosition.y - 0.8 * (1 - easedProgress);
+  sprite.scale
+    .copy(sprite.userData.popupScale)
+    .multiplyScalar(0.5 + 0.5 * easedProgress);
+  sprite.material.opacity =
+    sprite.userData.popupOpacity * Math.min(1, nextProgress * 2);
+  sprite.visible = shouldShow || nextProgress > 0;
+}
+
 export default function ThreeScene({
   selectedCharacter,
   isRunning,
@@ -1710,6 +1741,7 @@ export default function ThreeScene({
       //   prompt: !!prompt,
       // });
 
+      let shouldShowDrivePrompt = false;
       if (character && truck && prompt && !isDrivingRef.current) {
         const truckBody = truck.getObjectByName("truck_body");
 
@@ -1724,9 +1756,10 @@ export default function ThreeScene({
             )
             .distanceTo(proximityCharacterPosition);
 
-          prompt.visible = distance <= 5;
+          shouldShowDrivePrompt = distance <= 5;
         }
       }
+      updatePopupAnimation(prompt, shouldShowDrivePrompt, delta);
 
       if (character && !isDrivingRef.current) {
         const keys = keysRef.current;
@@ -2140,7 +2173,7 @@ export default function ThreeScene({
             targetPosition.x - knightPosition.x,
             targetPosition.z - knightPosition.z,
           );
-          knightLabelRef.current.visible = distance <= 5;
+          updatePopupAnimation(knightLabelRef.current, distance <= 5, delta);
         }
 
         if (conorLabelRef.current) {
@@ -2149,7 +2182,7 @@ export default function ThreeScene({
             targetPosition.x - conorPosition.x,
             targetPosition.z - conorPosition.z,
           );
-          conorLabelRef.current.visible = distance <= 4;
+          updatePopupAnimation(conorLabelRef.current, distance <= 4, delta);
         }
         if (postBoxLabelRef.current) {
           const postBoxPosition = postBoxPositionRef.current;
@@ -2157,7 +2190,7 @@ export default function ThreeScene({
             targetPosition.x - postBoxPosition.x,
             targetPosition.z - postBoxPosition.z,
           );
-          postBoxLabelRef.current.visible = distance <= 10;
+          updatePopupAnimation(postBoxLabelRef.current, distance <= 10, delta);
         }
         for (const { label, position } of animalLabelsRef.current) {
           const distance = Math.hypot(
@@ -2165,16 +2198,14 @@ export default function ThreeScene({
             targetPosition.z - position.z,
           );
 
-          label.visible = distance <= 5;
+          updatePopupAnimation(label, distance <= 5, delta);
         }
       } else {
-        if (knightLabelRef.current) knightLabelRef.current.visible = false;
-        if (conorLabelRef.current) conorLabelRef.current.visible = false;
-        if (postBoxLabelRef.current) {
-          postBoxLabelRef.current.visible = false;
-        }
+        updatePopupAnimation(knightLabelRef.current, false, delta);
+        updatePopupAnimation(conorLabelRef.current, false, delta);
+        updatePopupAnimation(postBoxLabelRef.current, false, delta);
         for (const { label } of animalLabelsRef.current) {
-          label.visible = false;
+          updatePopupAnimation(label, false, delta);
         }
       }
 
