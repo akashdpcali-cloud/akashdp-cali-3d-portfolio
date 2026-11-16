@@ -75,12 +75,7 @@ export const characters = [
 ];
 
 //BGM
-export const portfolioBGM = [
-  "/audio/bgm1.mp3",
-  "/audio/bgm2.mp3",
-  "/audio/bgm3.mp3",
-  "/audio/bgm4.mp3",
-];
+export const portfolioBGM = ["/audio/bgm1.mp3"];
 
 //INSTRUCTIONS
 export const instructionPopupData = [
