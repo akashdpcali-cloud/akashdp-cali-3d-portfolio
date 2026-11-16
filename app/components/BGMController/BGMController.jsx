@@ -25,10 +25,31 @@ export default function BGMController() {
     audio.volume = 0.1;
     audio.muted = false;
 
-    const playMusic = () => {
-      if (audio.paused) {
-        audio.play().catch(() => {});
+    let playbackPending = false;
+    let removeInteractionListeners = () => {};
+
+    const playMusic = (fromUserInteraction = false) => {
+      if (!audio.paused) {
+        removeInteractionListeners();
+        return;
       }
+
+      if (playbackPending && !fromUserInteraction) return;
+
+      playbackPending = true;
+      audio
+        .play()
+        .then(() => {
+          playbackPending = false;
+          removeInteractionListeners();
+        })
+        .catch((error) => {
+          playbackPending = false;
+
+          if (error?.name !== "NotAllowedError") {
+            console.error("Failed to play background music:", error);
+          }
+        });
     };
 
     const playNextSong = () => {
@@ -42,46 +63,36 @@ export default function BGMController() {
       playMusic();
     };
 
-    audio.addEventListener("ended", playNextSong);
-
-    // Try autoplay immediately.
-    playMusic();
-
-    /*
-     * If the browser blocks autoplay,
-     * start music after the user's first interaction.
-     */
     const handleFirstInteraction = () => {
-      playMusic();
-
-      window.removeEventListener("pointerdown", handleFirstInteraction);
-
-      window.removeEventListener("keydown", handleFirstInteraction);
-
-      window.removeEventListener("touchstart", handleFirstInteraction);
+      playMusic(true);
     };
 
-    window.addEventListener("pointerdown", handleFirstInteraction);
+    const interactionEvents = ["pointerdown", "touchstart", "keydown", "click"];
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, handleFirstInteraction, true);
+    });
 
-    window.addEventListener("keydown", handleFirstInteraction);
+    removeInteractionListeners = () => {
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, handleFirstInteraction, true);
+      });
+    };
 
-    window.addEventListener("touchstart", handleFirstInteraction);
-
-    return () => {
+    const cleanup = () => {
+      removeInteractionListeners();
       audio.pause();
       audio.currentTime = 0;
-
       audio.removeEventListener("ended", playNextSong);
-
-      window.removeEventListener("pointerdown", handleFirstInteraction);
-
-      window.removeEventListener("keydown", handleFirstInteraction);
-
-      window.removeEventListener("touchstart", handleFirstInteraction);
-
       audio.src = "";
       audioRef.current = null;
     };
+
+    audio.addEventListener("ended", playNextSong);
+
+    // Try autoplay; if blocked, retry from a user interaction.
+    playMusic();
+
+    return cleanup;
   }, []);
 
   const toggleMute = () => {
