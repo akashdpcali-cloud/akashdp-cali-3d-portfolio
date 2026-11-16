@@ -82,7 +82,7 @@ export const instructionPopupData = [
   "Open in desktop for better experience.",
   "Character Movement: keys(W A S D ) or the virtual joystick.",
   "360° View: Left click + Drag to look around.",
-  "Please refer to the map for optimal navigation.",
+  "Please refer to the map for optimal navigation and teleportation.",
   "Switch to your preferred character.",
   "Explore and Interact with the environment to discover my craft.",
 ];
