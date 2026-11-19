@@ -8,6 +8,9 @@ export const metadata = {
     default: "Akash D P | 3D Full-Stack Developer",
     template: "%s | Akash D P",
   },
+  icons: {
+    icon: "/assets/me.png", // or "/favicon.ico"
+  },
 
   metadataBase: new URL("https://akashdp.dev"),
 
